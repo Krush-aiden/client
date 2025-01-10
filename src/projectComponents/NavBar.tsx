@@ -38,16 +38,16 @@ const Navbar = () => {
           {/* Left side - FoodSy (with absolute positioning) */}
           <NavLink
             to="/"
-            className="font-bold text-2xl mt-4 md:font-extrabold absolute left-2"
+            className="text-blue-700 font-bold text-2xl mt-4 md:font-extrabold absolute left-2"
           >
             FoodSy
           </NavLink>
 
           {/* Right side - Navigation Links */}
           <div className="hidden md:flex items-center gap-3 ml-auto">
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/Profile">Profile</NavLink>
-            <NavLink to="/Order/status">Order</NavLink>
+            <NavLink to="/" className="text-blue-700">Home</NavLink>
+            <NavLink to="/Profile" className="text-blue-700">Profile</NavLink>
+            <NavLink to="/Order/status" className="text-blue-700">Order</NavLink>
 
             {admin && (
               <Menubar>
@@ -85,14 +85,14 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="pl-3">
+            <div className="pl-3 ">
               <NavLink to="/Cart">
-                <div className="pl-2">
+                <div className="pl-2 ">
                   <Button className="pr-3 size-1 relative-inset-y-2 left-4 text-xs rounded-full bg-orange">
                     5
                   </Button>
                 </div>
-                <ShoppingCart className="ml-2 " />
+                <ShoppingCart className="ml-2 text-blue-700" />
               </NavLink>
             </div>
             <div>
@@ -117,7 +117,7 @@ const Navbar = () => {
               ) : (
                 <button
                   type="submit"
-                  className="w-full bg-orange hover:bg-hoverOrange py-3 px-4"
+                  className="w-full bg-orange hover:bg-hoverOrange py-3 px-4 rounded-lg"
                 >
                   Logout
                 </button>

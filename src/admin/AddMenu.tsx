@@ -23,7 +23,7 @@ function AddMenu() {
         </h1>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="bg-orange hover:bg-HoverOrange">
+          <DialogTrigger className="bg-orange hover:bg-HoverOrange p-3 rounded-lg">
             + Add Menus
           </DialogTrigger>
           <DialogContent>

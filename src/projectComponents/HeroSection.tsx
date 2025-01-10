@@ -29,7 +29,7 @@ function HeroSection() {
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Search for food..."
           />
-          <button onClick={() => navigate(`/Search/${searchText}`)} className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md">Search</button>
+          <button onClick={() => navigate(`/Search/${searchText}`)} className="bg-orange hover:bg-hoverOrange text-white px-4 py-2 rounded-md">Search</button>
         </div>
       </div>
 
