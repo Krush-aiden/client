@@ -11,9 +11,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import pizzaImage from "@/assets/Hero_Page_Pizza.jpg";
+import EditMenu from "./EditMenu";
 
 function AddMenu() {
   const [open, setOpen] = useState<boolean>(false);
+  const [selectedMenu, setSelectedMenu] = useState();
+  // const loading = false;
 
   return (
     <div className="max-w-6xl mx-auto my-10">
@@ -21,7 +25,6 @@ function AddMenu() {
         <h1 className="font-bold md:font-extrabold text-lg md:text-2xl">
           Available Menu
         </h1>
-
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger className="bg-orange hover:bg-HoverOrange p-3 rounded-lg">
             + Add Menus
@@ -100,6 +103,32 @@ function AddMenu() {
           </DialogContent>
         </Dialog>
       </div>
+      {
+        [1,2,3].map((item:number, idx:number) => {
+          return (
+            <div key={idx} className="mt-6 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
+              <img
+                src={pizzaImage}
+                alt="res_Image"
+                className="md:h-24 md:w-24 object-cover w-full h-full rounded-lg shadow-lg"
+              />
+              <div className="flex-1 text-left">
+                <h1 className="text-lg font-semibold text-gray-800">{item}</h1>
+                <p className="text-sm text-gray-600 mt-1"> Lorem ipsum dolor sit amet consectetur, adipisicing elit.</p>
+                <h2 className="text-md font-semibold mt-2">
+                  Price: <span className="text-[#D19254]">₹80</span>
+                </h2>
+              </div>
+              <Button 
+              onClick={() => selectedMenu(item)}
+              className="bg-orange hover:bg-hoverOrange mt-2" size={'sm'}>Edit</Button>
+            </div>
+          </div>
+          );
+        })
+      }
+      <EditMenu selectedMenu ={selectedMenu}/>
     </div>
   );
 }
