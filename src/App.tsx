@@ -13,6 +13,7 @@ import RestaurantDetails from './projectComponents/RestaurantDetails';
 import Cart from './projectComponents/Cart';
 import Restaurant from './admin/Restaurant';
 import AddMenu from './admin/AddMenu';
+import Order from './admin/Order';
 
 const appRounter  = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const appRounter  = createBrowserRouter([
       {
         path:"/admin/menu",
         element:<AddMenu/>
+      },
+      {
+        path:"/admin/order",
+        element:<Order/>
       },
       {
         path: "/FilterPage",

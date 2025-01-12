@@ -10,14 +10,27 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 // import pizzaImage from "@/assets/Hero_Page_Pizza.jpg";
 import EditMenu from "./EditMenu";
-import { MenuFormSchema } from "@/schema/menuSchema";
+import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
 
 function AddMenu() {
   const [open, setOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
+  const [input, setInput] = useState<MenuFormSchema>({
+    name: "",
+    description: "",
+    price: 0,
+    image: undefined,
+  });
+
+  const changeEveenthandler = (e:React.ChangeEvent<HTMLInputElement>) =>{
+    const {name,value,type} = e.target;
+    console.log("🚀 ~ changeEveenthandler ~ name:", name);
+    setInput({...input, [name]:type === "number" ? Number(value):value})
+  }
+
   const [selectedMenu, setSelectedMenu] = useState<MenuFormSchema>({
     name: "",
     description: "",
@@ -51,7 +64,35 @@ function AddMenu() {
       image:"https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk="
     }
     
-]
+  ]
+
+  const [error, setError] = useState<Partial<MenuFormSchema>>({});
+  
+const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
+  e.preventDefault();
+  const result = menuSchema.safeParse(input);
+  console.log("🚀 ~ submitHandler ~ result:", result);
+  console.log("🚀 ~ AddMenu ~ input:", input);
+  console.log("🚀 ~ AddMenu ~ error:", error);
+
+  if(!result.success){
+    const fieldError = result.error.formErrors.fieldErrors;
+    console.log("🚀 ~ submitHandler ~ fieldError:", fieldError);
+    setError(fieldError as Partial<MenuFormSchema>);
+    return;
+  } else {
+    setError(
+      {
+        name: "",
+        description: "",
+        price: undefined,
+        image:  undefined
+      }
+    )
+  }
+  //Todo api implementation starts here
+}
+
 
   return (
     <div className="max-w-6xl mx-auto my-10">
@@ -74,6 +115,7 @@ function AddMenu() {
             </DialogHeader>
             <form
               action=""
+              onSubmit={submitHandler}
               className="space-y-6 max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg"
             >
               {/* Name Field */}
@@ -84,9 +126,11 @@ function AddMenu() {
                 <Input
                   type="text"
                   name="name"
+                  onChange={changeEveenthandler}
                   placeholder="Enter menu name"
                   className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
+                {error && <span className="text-xs font-extrabold text-red-600">{error.name}</span>}
               </div>
 
               {/* Description Field */}
@@ -97,9 +141,11 @@ function AddMenu() {
                 <Input
                   type="text"
                   name="description"
+                  onChange={changeEveenthandler}
                   placeholder="Enter menu description"
                   className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
+                {error && <span className="text-xs font-extrabold text-red-600">{error.description}</span>}
               </div>
 
               {/* Price Field */}
@@ -108,11 +154,13 @@ function AddMenu() {
                   Price in (₹)
                 </Label>
                 <Input
-                  type="text"
+                  type="number"
                   name="price"
+                  onChange={changeEveenthandler}
                   placeholder="Enter menu price"
                   className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
+                {error && <span className="text-xs font-extrabold text-red-600">{error.price}</span>}
               </div>
 
               {/* Image Upload Field */}
@@ -123,8 +171,14 @@ function AddMenu() {
                 <input
                   type="file"
                   name="image"
+                  onChange={(e) => setInput({
+                    ...input,
+                    image: e.target.files?.[0] || undefined,
+                  })
+                }
                   className="bg-white mt-2 w-full text-gray-700 border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
+                {error && <span className="text-xs font-extrabold text-red-600">{error.image}</span>}
               </div>
 
               {/* Submit Button */}

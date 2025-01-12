@@ -62,7 +62,7 @@ const Navbar = () => {
                     <NavLink to="/admin/menu">
                       <MenubarItem>Menu</MenubarItem>
                     </NavLink>
-                    <NavLink to="/admin/menu">
+                    <NavLink to="/admin/order">
                       <MenubarItem>Orders</MenubarItem>
                     </NavLink>
                   </MenubarContent>

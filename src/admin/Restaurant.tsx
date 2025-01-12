@@ -35,6 +35,15 @@ const Restaurant = () => {
       setErrors(fieldErrors as Partial<restaurantFormSchema>);
       console.log("🚀 ~ Restaurant ~ errors:", errors);
       return;
+    } else {
+      setErrors({
+        restaurantName: "",
+        restaurantCity: "",
+        restaurantCountry: "",
+        restaurantEdt: undefined,
+        restaurantCuisines: undefined,
+        restaurantImage: undefined,
+      })
     }
 
     //Todo Api Implementation starts here

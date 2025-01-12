@@ -125,8 +125,12 @@ function EditMenu({
             <input
               type="file"
               // value={input?.image}
-              onChange={changeEventHandler}
               name="image"
+              onChange={(e) => setInput({
+                ...input,
+                image: e.target.files?.[0] || undefined,
+              })
+            }
               className="bg-white mt-2 w-full text-gray-700 border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             />
           </div>
