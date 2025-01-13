@@ -56,7 +56,7 @@ const Navbar = () => {
                     Dashboard
                   </MenubarTrigger>
                   <MenubarContent>
-                    <NavLink to="/admin/Resturant">
+                    <NavLink to="/admin/restaurant">
                       <MenubarItem>Resturant</MenubarItem>
                     </NavLink>
                     <NavLink to="/admin/menu">
@@ -146,7 +146,9 @@ const MobileNavbar = () => {
       <SheetContent className="flex flex-col">
         <SheetHeader className="flex flex-row items-center justify-between mt-2">
           <SheetTitle className="flex flex-row gap-2">
+            <NavLink to="/">
             FoodSy
+            </NavLink>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="">
@@ -169,7 +171,7 @@ const MobileNavbar = () => {
             <User/>
             <span>Profile</span>
           </NavLink>
-          <NavLink to="/profile" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
+          <NavLink to="/order/status" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
             <HandPlatter/>
             <span>Order</span>
           </NavLink>
@@ -185,7 +187,7 @@ const MobileNavbar = () => {
             <UtensilsCrossed/>
             <span>Restaurant</span>
           </NavLink>
-          <NavLink to="/profile" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
+          <NavLink to="/admin/order" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
             <ListOrdered/>
             <span>Restaurant Orders</span>
           </NavLink>

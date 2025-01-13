@@ -14,6 +14,7 @@ import Cart from './projectComponents/Cart';
 import Restaurant from './admin/Restaurant';
 import AddMenu from './admin/AddMenu';
 import Order from './admin/Order';
+import Success from './projectComponents/Success';
 
 const appRounter  = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const appRounter  = createBrowserRouter([
       {
         path:"/Restaurant/:id",
         element:<RestaurantDetails/>
+      },
+      {
+        path:"/order/status",
+        element:<Success/>
       },
       {
         path:"/Cart",
