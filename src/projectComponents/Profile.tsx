@@ -40,14 +40,14 @@ const Profile = () => {
     }
   };
 
-  const updateProdfileHandler = (e: FormEvent<HTMLFormElement>) =>{
+  const updateProfileHandler = (e: FormEvent<HTMLFormElement>) =>{
         e.preventDefault();
-        console.log("🚀 ~ Profile ~ profileData:", profileData);
+        console.log("🚀 ~ Pofile ~ profileData:", profileData);
         // Todo Update Profile Data update API Implementation
   };
 
   return (
-    <form onSubmit={updateProdfileHandler} className="max-w-7xl mx-auto my-5">
+    <form onSubmit={updateProfileHandler} className="max-w-7xl mx-auto my-5">
     <div className="flex flex-col md:flex-row items-center justify-between gap-5">
       {/* Avatar and Username Section */}
       <div className="flex flex-col md:flex-row items-center gap-4">

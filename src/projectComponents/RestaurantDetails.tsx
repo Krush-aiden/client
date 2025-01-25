@@ -26,7 +26,7 @@ const RestaurantDetails = () => {
                 <div className="flex items-center gap-2">
                   <Timer className="w-6 h-6" />
                   <h2 className="flex items-center gap-2 font-medium">
-                    Delhivery Time:{" "}
+                    Delivery Time:{" "}
                     <span className="text-[#D19254]">35 mins</span>
                   </h2>
                 </div>

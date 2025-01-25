@@ -1,41 +1,70 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Contact, Loader2, Lock, Mail, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SignupInputState, userSignupSchema } from "@/schema/userSchema";
+import { useDispatch, useSelector } from "react-redux";
+import { signUpUser } from "@/feature/UserSlicer";
+import { AppDispatch } from "@/app/store";
+// import { toast } from "sonner";
+import { toast } from "react-toastify";
 
 const Signup = () => {
   const loading = false;
+  // const { toast } = Toaster();
+
+  const dispatch = useDispatch<AppDispatch>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const signupApiRes: any = useSelector<any>((state) => state.user);
 
   const [Input, setInput] = useState<SignupInputState>({
-    fullName:"",
-    contact:"",
+    fullName: "",
+    contact: "",
     email: "",
-    password:""
+    password: "",
   });
 
-  const changeEventHandler = (e:ChangeEvent<HTMLInputElement>) =>{
-    const {name,value} = e.target;
-    setInput({...Input, [name]:value});
+  const changeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setInput({ ...Input, [name]: value });
   };
 
   const [errorsMsg, setErrorsMsg] = useState<Partial<SignupInputState>>({});
   const [ErrorState, setErrorState] = useState<boolean>();
 
-  const loginSubmitHandler = (e:FormEvent) =>{
+  const loginSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
     const result = userSignupSchema.safeParse(Input);
     setErrorState(result.success);
 
-    if(!result.success){
+    if (!result.success) {
       const fieldErrors = result.error.formErrors.fieldErrors;
       setErrorsMsg(fieldErrors as Partial<SignupInputState>);
       return;
     }
 
-    console.log('Input:',Input);
+    console.log("Input:", Input);
     // Todo Api implementation starts here
+    // Wrap the Input data inside the expected structure
+    const payload = { userDetails: Input };
+
+    console.log("🚀 ~ loginSubmitHandler ~ payload:", payload);
+    // Dispatch the action with the correct payload structure
+    console.log("🚀 ~ useEffect ~ signupApiRes.message:", signupApiRes.message);
+
+    dispatch(signUpUser(payload));
+    if (signupApiRes.message !== "") {
+      toast.error(signupApiRes.message);
+    }
   };
+
+  useEffect(() => {
+    console.log("🚀 ~ Signup ~ signupApiRes:", signupApiRes);
+    console.log("🚀 ~ useEffect ~ signupApiRes.message:", signupApiRes.message);
+    if (signupApiRes.message !== "") {
+      toast.error(signupApiRes.message);
+    }
+  }, [signupApiRes, signupApiRes.message]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -58,7 +87,9 @@ const Signup = () => {
             />
             <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-            {!ErrorState && <span className="text-sm text-red-500">{errorsMsg.fullName}</span>}
+          {!ErrorState && (
+            <span className="text-sm text-red-500">{errorsMsg.fullName}</span>
+          )}
         </div>
 
         <div className="mb-6">
@@ -67,12 +98,14 @@ const Signup = () => {
               className="w-full px-12 py-3 text-lg text-gray-800 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               name="contact"
               placeholder="Contact"
-            //   value={Input.contact}
+              //   value={Input.contact}
               onChange={changeEventHandler}
             />
             <Contact className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-            {!ErrorState  && <span className="text-sm text-red-500">{errorsMsg.contact}</span>}
+          {!ErrorState && (
+            <span className="text-sm text-red-500">{errorsMsg.contact}</span>
+          )}
         </div>
 
         <div className="mb-6">
@@ -87,7 +120,9 @@ const Signup = () => {
             />
             <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-            {!ErrorState  && <span className="text-sm text-red-500">{errorsMsg.email}</span>}
+          {!ErrorState && (
+            <span className="text-sm text-red-500">{errorsMsg.email}</span>
+          )}
         </div>
 
         <div className="mb-6">
@@ -102,7 +137,9 @@ const Signup = () => {
             />
             <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-            {!ErrorState  && <span className="text-sm text-red-500">{errorsMsg.password}</span>}
+          {!ErrorState && (
+            <span className="text-sm text-red-500">{errorsMsg.password}</span>
+          )}
         </div>
         <div className="mb-10">
           {loading ? (
