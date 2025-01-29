@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,14 +23,46 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-import { HandPlatter, ListOrdered, Loader2, Menu, Moon, ShoppingCart, SquareMenu, Sun, User, UtensilsCrossed } from "lucide-react";
+import {
+  HandPlatter,
+  ListOrdered,
+  Loader2,
+  Menu,
+  Moon,
+  ShoppingCart,
+  SquareMenu,
+  Sun,
+  User,
+  UtensilsCrossed,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { logout } from "@/feature/UserSlicer";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/app/store";
+import { FormEvent } from "react";
 
 const Navbar = () => {
   const admin = true;
   const loading = false;
+
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+
+  const onClickLogout = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      dispatch(logout()).unwrap();
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("users");
+      window.location.reload();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <div className="text-white fixed w-full top-0 left-0 z-50 backdrop-filter">
       <div className="max-w-7xl mx-auto px-2 relative">
@@ -45,9 +77,15 @@ const Navbar = () => {
 
           {/* Right side - Navigation Links */}
           <div className="hidden md:flex items-center gap-3 ml-auto">
-            <NavLink to="/" className="text-blue-700">Home</NavLink>
-            <NavLink to="/Profile" className="text-blue-700">Profile</NavLink>
-            <NavLink to="/Order/status" className="text-blue-700">Order</NavLink>
+            <NavLink to="/" className="text-blue-700">
+              Home
+            </NavLink>
+            <NavLink to="/Profile" className="text-blue-700">
+              Profile
+            </NavLink>
+            <NavLink to="/Order/status" className="text-blue-700">
+              Order
+            </NavLink>
 
             {admin && (
               <Menubar>
@@ -117,6 +155,7 @@ const Navbar = () => {
               ) : (
                 <button
                   type="submit"
+                  onClick={onClickLogout}
                   className="w-full bg-orange hover:bg-hoverOrange py-3 px-4 rounded-lg"
                 >
                   Logout
@@ -136,6 +175,8 @@ const Navbar = () => {
 export default Navbar;
 
 const MobileNavbar = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -146,9 +187,7 @@ const MobileNavbar = () => {
       <SheetContent className="flex flex-col">
         <SheetHeader className="flex flex-row items-center justify-between mt-2">
           <SheetTitle className="flex flex-row gap-2">
-            <NavLink to="/">
-            FoodSy
-            </NavLink>
+            <NavLink to="/">FoodSy</NavLink>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="">
@@ -167,48 +206,70 @@ const MobileNavbar = () => {
         </SheetHeader>
         <Separator />
         <SheetDescription className="flex-1">
-          <NavLink to="/profile" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
-            <User/>
+          <NavLink
+            to="/profile"
+            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+          >
+            <User />
             <span>Profile</span>
           </NavLink>
-          <NavLink to="/order/status" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
-            <HandPlatter/>
+          <NavLink
+            to="/order/status"
+            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+          >
+            <HandPlatter />
             <span>Order</span>
           </NavLink>
-          <NavLink to="/Cart" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
-            <ShoppingCart/>
+          <NavLink
+            to="/Cart"
+            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+          >
+            <ShoppingCart />
             <span>Cart (0)</span>
           </NavLink>
-          <NavLink to="/admin/menu" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
-            <SquareMenu/>
+          <NavLink
+            to="/admin/menu"
+            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+          >
+            <SquareMenu />
             <span>Menu</span>
           </NavLink>
-          <NavLink to="/admin/restaurant" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
-            <UtensilsCrossed/>
+          <NavLink
+            to="/admin/restaurant"
+            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+          >
+            <UtensilsCrossed />
             <span>Restaurant</span>
           </NavLink>
-          <NavLink to="/admin/order" className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium">
-            <ListOrdered/>
+          <NavLink
+            to="/admin/order"
+            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+          >
+            <ListOrdered />
             <span>Restaurant Orders</span>
           </NavLink>
         </SheetDescription>
         <SheetFooter className="flex flex-col gap-4">
-              <div className="flex flex-row items-center gap-2 mt-2">
-              <Avatar>
-                <AvatarImage
-                  className="relative left-2 text-xs rounded-full size-10"
-                  src="https://github.com/shadcn.png"
-                  alt="@shadcn"
-                />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-              <h1 className="font-bold text-xl ml-2">FoodSy User</h1>
-              </div>
-              <SheetClose asChild>
-              <Button type="submit" className="bg-orange hover:bg-HoverOrange">
-                Logout
-              </Button>
-              </SheetClose>
+          <div className="flex flex-row items-center gap-2 mt-2">
+            <Avatar>
+              <AvatarImage
+                className="relative left-2 text-xs rounded-full size-10"
+                src="https://github.com/shadcn.png"
+                alt="@shadcn"
+              />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <h1 className="font-bold text-xl ml-2">FoodSy User</h1>
+          </div>
+          <SheetClose asChild>
+            <Button
+              type="submit"
+              onClick={() => dispatch(logout())}
+              className="bg-orange hover:bg-HoverOrange"
+            >
+              Logout
+            </Button>
+          </SheetClose>
         </SheetFooter>
       </SheetContent>
     </Sheet>

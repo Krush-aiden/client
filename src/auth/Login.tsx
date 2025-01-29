@@ -1,16 +1,13 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Loader2, Lock, Mail } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { LoginInputState, userLoginSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { toast } from "react-toastify";
-import { signUpUser } from "@/feature/UserSlicer";
+import { loginUser } from "@/feature/UserSlicer";
 
 const Login = () => {
-  const loading = false;
-
   const [Input, setInput] = useState<LoginInputState>({
     email: "",
     password: "",
@@ -20,16 +17,22 @@ const Login = () => {
     const { name, value } = e.target;
     setInput({ ...Input, [name]: value });
   };
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState<Partial<LoginInputState>>({});
 
-  console.log("errorMsg", errorMsg);
   const [errorState, setErrorState] = useState<boolean>();
-  console.log(errorState);
 
   const dispatch = useDispatch<AppDispatch>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loginApiRes: any = useSelector<any>((state) => state.user);
+  console.log("🚀 ~ loginSubmitHandler ~ loginApiRes:", loginApiRes);
+
+  if (loginApiRes?.users[0]?.success) {
+    console.log("here--->>>");
+    navigate("/");
+  }
 
   const loginSubmitHandler = (e: FormEvent) => {
     e.preventDefault();
@@ -38,29 +41,20 @@ const Login = () => {
 
     if (!result.success) {
       const fieldError = result.error.formErrors.fieldErrors;
-      console.log(fieldError);
       setErrorMsg(fieldError as Partial<LoginInputState>);
       return;
     }
 
-    const payload = { userDetails: Input };
+    const payload = { loginUserDetails: Input };
 
     console.log("🚀 ~ loginSubmitHandler ~ payload:", payload);
     // Dispatch the action with the correct payload structure
 
-    dispatch(signUpUser(payload));
-    if (loginApiRes.message !== "") {
-      toast.error(loginApiRes.message);
-    }
+    // if (loginApiRes.users.length <= 0) {
+    dispatch(loginUser(payload));
+    setLoading(true);
+    // }
   };
-
-  useEffect(() => {
-    console.log("🚀 ~ Signup ~ loginApiRes:", loginApiRes);
-    console.log("🚀 ~ useEffect ~ loginApiRes.message:", loginApiRes.message);
-    if (loginApiRes.message !== "") {
-      toast.error(loginApiRes.message);
-    }
-  }, [loginApiRes, loginApiRes.message]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
