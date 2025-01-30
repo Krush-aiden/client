@@ -1,18 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useState, useRef, FormEvent, useEffect } from "react";
 import { verifyEmail } from "@/feature/UserSlicer";
 import { AppDispatch } from "@/app/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-// import { Navigate } from "react-router-dom";
 
 const VerifyEmail = () => {
   const inputRef = useRef<(HTMLInputElement | null)[]>([]);
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  // console.log("🚀 ~ VerifyEmail ~ otp:", otp);
 
   const handleChange = (index: number, value: string) => {
     if (/^[a-zA-Z0-9]$/.test(value) || value === "") {
@@ -20,12 +16,6 @@ const VerifyEmail = () => {
       newOtp[index] = value;
       setOtp(newOtp);
     }
-    //Move to the next Input field if a
-    // console.log("🚀 ~ handleChange ~ value:", value);
-    // console.log(
-    //   "🚀 ~ handleChange ~ inputRef.current[index:",
-    //   inputRef.current[index]
-    // );
     if (/^[a-zA-Z0-9]$/.test(value) && index < 5) {
       inputRef.current[index + 1]?.focus();
     }
@@ -36,7 +26,6 @@ const VerifyEmail = () => {
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key == "Backspace" && otp[index] === "" && index > 0) {
-      console.log("if");
       inputRef.current[index - 1]?.focus();
     }
   };
@@ -45,16 +34,10 @@ const VerifyEmail = () => {
   const [loading, setLoading] = useState(false);
 
   const { isLoading, users }: any = useSelector<any>((state) => state.user);
-  // console.log("🚀 ~ VerifyEmail ~ verifyEmailRes:", verifyEmailCodeRes);
 
   const submitHandler = async (e: FormEvent) => {
     e.preventDefault();
     const verificationCodeVal = otp.join("");
-
-    // const verifyEmailDetails = {
-    //   verifyEmailCode: verificationCodeVal,
-    // };
-    console.log("🚀 ~ submitHandler ~ verificationCode:", verificationCodeVal);
     try {
       if (verificationCodeVal !== "") {
         dispatch(
@@ -68,9 +51,7 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     setLoading(isLoading);
-    console.log("🚀 ~ useEffect ~ users:", users);
     if (users[0]?.success && users[0]?.user?.isVerified) {
-      console.log("navigate ====>>>");
       navigate("/login");
     }
   }, [navigate, isLoading, users]);

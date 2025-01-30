@@ -6,13 +6,11 @@ import { SignupInputState, userSignupSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "@/feature/UserSlicer";
 import { AppDispatch } from "@/app/store";
-// import { toast } from "sonner";
 
 const Signup = () => {
   // const { toast } = Toaster();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const signupApiRes: any = useSelector<any>((state) => state.user);
   console.log("🚀 ~ Signup ~ signupApiRes:", signupApiRes);
   const [loading, setLoading] = useState(false);
@@ -44,26 +42,19 @@ const Signup = () => {
 
     console.log("Input:", Input);
     // Todo Api implementation starts here
-    // Wrap the Input data inside the expected structure
     const payload = { signupUserDetails: Input };
-    // Dispatch the action with the correct payload structure
     console.log("🚀 ~ loginSubmitHandler ~ signupApiRes:", signupApiRes);
-    // if (signupApiRes.users.length <= 0) {
 
-    // }
     try {
       setLoading(signupApiRes.isLoading);
       await dispatch(signUpUser(payload)).unwrap();
-      // window.location.reload();
     } catch (error) {
       console.error("Logout failed:", error);
     }
-    navigate("/verifyEmail");
   };
 
   useEffect(() => {
     if (signupApiRes?.users[0]?.success) {
-      console.log("🚀 ~ useEffect ~ signupApiRes:", signupApiRes);
       navigate("/VerifyEmail");
     }
   }, [signupApiRes, navigate]);

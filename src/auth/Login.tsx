@@ -17,21 +17,12 @@ const Login = () => {
     const { name, value } = e.target;
     setInput({ ...Input, [name]: value });
   };
+
   const [loading, setLoading] = useState(false);
-
   const [errorMsg, setErrorMsg] = useState<Partial<LoginInputState>>({});
-
   const [errorState, setErrorState] = useState<boolean>();
-
   const dispatch = useDispatch<AppDispatch>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { users, isLoading }: any = useSelector<any>((state) => state.user);
-  // console.log("🚀 ~ loginSubmitHandler ~ loginApiRes:", loginApiRes);
-
-  if (users[0]?.success) {
-    console.log("here--->>>");
-    // navigate("/");
-  }
+  const { isLoading }: any = useSelector<any>((state) => state.user);
 
   const loginSubmitHandler = (e: FormEvent) => {
     e.preventDefault();
@@ -43,13 +34,8 @@ const Login = () => {
       setErrorMsg(fieldError as Partial<LoginInputState>);
       return;
     }
-
     const payload = { loginUserDetails: Input };
 
-    console.log("🚀 ~ loginSubmitHandler ~ payload:", payload);
-    // Dispatch the action with the correct payload structure
-
-    // if (loginApiRes.users.length <= 0) {
     try {
       dispatch(loginUser(payload)).unwrap();
     } catch (error) {

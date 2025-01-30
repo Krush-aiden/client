@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import "./App.css";
 import Login from "./auth/Login";
 import {
@@ -27,12 +26,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "./app/store";
 
 const saveToLocalStorage = (isAuthenticated: any, users: any) => {
-  console.log("🚀 ~ saveToLocalStorage ~ users:", users);
-  console.log(
-    "🚀 ~ saveToLocalStorage ~ isAuthenticated: ------------================================",
-    isAuthenticated
-  );
-  console.log("🚀 ~ saveToLocalStorage ~ users[0]?.user?.isVerified :", users);
   if (
     (localStorage.getItem("users") ||
       localStorage.getItem("isAuthenticated")) &&
@@ -40,9 +33,6 @@ const saveToLocalStorage = (isAuthenticated: any, users: any) => {
     users.length > 0 &&
     users[0]?.user?.isVerified
   ) {
-    console.log(
-      "removeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-    );
     localStorage.removeItem("users");
     localStorage.removeItem("isAuthenticated");
   }
@@ -64,7 +54,6 @@ const saveToLocalStorage = (isAuthenticated: any, users: any) => {
   if (checkAuthUserVal) {
     try {
       checkAuthUserParsed = JSON.parse(checkAuthUserVal);
-      console.log("Parsed users:", checkAuthUserParsed);
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
@@ -79,36 +68,16 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
     (state) => state.user
   );
 
-  const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
-    isAuthenticated,
-    users
-  );
-
-  console.log(
-    "🚀 ~ ProtectedRoutes ~ isAuthenticatedLoc:================================ 11111 ",
-    isAuthenticatedLoc
-  );
-
-  console.log(
-    "🚀 ~ ProtectedRoutes ~ checkAuthUserParsed:================================ 11111",
-    checkAuthUserParsed
-  );
+  const { isAuthenticatedLoc } = saveToLocalStorage(isAuthenticated, users);
 
   if (!isAuthenticatedLoc) {
     return <Navigate to="/login" replace />;
   }
-  console.log(
-    "🚀 ~ ProtectedRoutes ~ users[0]?.user?.isVerified:",
-    checkAuthUserParsed[0]?.user?.isVerified
-  );
-
-  console.log("🚀 ~ ProtectedRoutes ~ users:", users);
 
   if (!users[0]?.user?.isVerified && !isAuthenticatedLoc) {
     return <Navigate to="/VerifyEmail" replace />;
   }
 
-  // dispatch(isAuthenticatedFun());
   return children;
 };
 
@@ -116,21 +85,10 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
     (state) => state.user
   );
-  console.log("🚀 ~ AuthenticatedUser ~ isAuthenticated:", isAuthenticated);
-  console.log("🚀 ~ AuthenticatedUser ~ users:", users);
 
   const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
     isAuthenticated,
     users
-  );
-
-  console.log(
-    "🚀 ~ AuthenticatedUser ~ checkAuthUserParsed:========================================== 22222 ",
-    checkAuthUserParsed
-  );
-  console.log(
-    "🚀 ~ ProtectedRoutes ~ isAuthenticatedLoc:========================================== 22222 ",
-    isAuthenticatedLoc
   );
 
   if (isAuthenticatedLoc && checkAuthUserParsed[0]?.user?.isVerified) {
@@ -138,13 +96,11 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/" replace />;
   }
 
-  console.log("🚀 ~ AuthenticatedUser ~ users:", users);
   if (
     users.length > 0 &&
     users[0]?.user?.isVerified == false &&
     !isAuthenticatedLoc
   ) {
-    console.log("inside >>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<,");
     window.location.reload();
     return <Navigate to="/VerifyEmail" replace />;
   }
@@ -157,20 +113,7 @@ const AdminRout = ({ children }: { children: React.ReactNode }) => {
     (state) => state.user
   );
 
-  const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
-    isAuthenticated,
-    users
-  );
-
-  console.log(
-    "🚀 ~ ProtectedRoutes ~ isAuthenticatedLoc:========================================== 3333 AuthenticatedUser",
-    isAuthenticatedLoc
-  );
-
-  console.log(
-    "🚀 ~ AdminRout ~ checkAuthUserParsed:",
-    checkAuthUserParsed[0]?.user?.admin
-  );
+  const { checkAuthUserParsed } = saveToLocalStorage(isAuthenticated, users);
 
   if (!checkAuthUserParsed[0]?.user?.admin) {
     return <Navigate to="/" replace />;
@@ -297,7 +240,6 @@ function App() {
     } else {
       dispatch(isAuthenticatedFun());
     }
-    // }
   }, [isAuthenticatedFun]);
 
   return (

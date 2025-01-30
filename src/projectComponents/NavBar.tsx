@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -53,15 +52,12 @@ const Navbar = () => {
   if (adminVal) {
     try {
       adminParsed = JSON.parse(adminVal);
-      console.log("Parsed users:", adminParsed);
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
   } else {
     console.log("No data found for users in localStorage.");
   }
-
-  console.log("🚀 ~ Navbar ~ adminParsed:", adminParsed);
 
   const admin = adminParsed[0]?.user?.admin;
   console.log("🚀 ~ Navbar ~ admin:", admin);
@@ -205,7 +201,6 @@ const MobileNavbar = () => {
   if (adminVal) {
     try {
       adminParsed = JSON.parse(adminVal);
-      console.log("Parsed users:", adminParsed);
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
@@ -213,10 +208,7 @@ const MobileNavbar = () => {
     console.log("No data found for users in localStorage.");
   }
 
-  console.log("🚀 ~ Navbar ~ adminParsed:", adminParsed);
-
   const admin = adminParsed[0]?.user?.admin;
-  console.log("🚀 ~ Navbar ~ admin:", admin);
 
   const dispatch = useDispatch<AppDispatch>();
 

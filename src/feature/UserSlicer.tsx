@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import {
@@ -19,7 +18,6 @@ export const signUpUser = createAsyncThunk<
   signupUserResponse,
   SignUpUserPayload
 >("signUpUser", async ({ signupUserDetails }, { rejectWithValue }) => {
-  console.log("🚀 ~ userDetails:", signupUserDetails);
   try {
     // Make sure you use the correct protocol and port
     const response = await axios.post(`${API_USER}/signup`, signupUserDetails);
@@ -45,7 +43,6 @@ interface loginUserPayload {
 export const loginUser = createAsyncThunk<loginUserResponse, loginUserPayload>(
   "loginUser",
   async ({ loginUserDetails }, { rejectWithValue }) => {
-    console.log("🚀 ~ userDetails:", loginUserDetails);
     try {
       // Make sure you use the correct protocol and port
       const response = await axios.post(`${API_USER}/login`, loginUserDetails, {
@@ -64,16 +61,10 @@ export const loginUser = createAsyncThunk<loginUserResponse, loginUserPayload>(
   }
 );
 
-// interface verifyEmailPayload {
-
-// }
-
 //MARK:VerifyEmail
 export const verifyEmail = createAsyncThunk<any, any>(
   "verifyEmail",
   async ({ verifyEmailCode }, { rejectWithValue }) => {
-    console.log("hee");
-    console.log("🚀 ~ verifyEmailCode:", verifyEmailCode);
     try {
       const response = await axios.post(`${API_USER}/verify-email`, {
         verificationCode: verifyEmailCode,
@@ -96,7 +87,6 @@ export const isAuthenticatedFun = createAsyncThunk(
   "isAuthenticatedFun",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("🚀 ~ response:");
       const response = await axios.get(`${API_USER}/check-auth`, {
         withCredentials: true, // Include credentials (cookies)
       });
@@ -117,8 +107,6 @@ export const logout = createAsyncThunk(
   "logout",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("🚀 ~ logout response:");
-
       const response = await axios.post(
         `${API_USER}/logout`,
         {},
@@ -126,8 +114,6 @@ export const logout = createAsyncThunk(
           withCredentials: true, // Include credentials (cookies)
         }
       );
-      // localStorage.removeItem("isAuthenticated");
-      // localStorage.removeItem("users");
       return response.data;
     } catch (error: any) {
       console.error(
@@ -157,13 +143,10 @@ export const userApi = createSlice({
   extraReducers: (builder) => {
     //SignUp
     builder.addCase(signUpUser.pending, (state) => {
-      console.log("here 1");
       state.isLoading = true;
     });
     builder.addCase(signUpUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
-
       state.users = [];
       state.users.push(action.payload);
       toast.success<unknown>(
@@ -173,7 +156,6 @@ export const userApi = createSlice({
       );
     });
     builder.addCase(signUpUser.rejected, (state, action) => {
-      console.log("here 3");
       state.error = true;
       state.isLoading = false;
       state.message = action.payload;
@@ -186,16 +168,13 @@ export const userApi = createSlice({
 
     //Login
     builder.addCase(loginUser.pending, (state) => {
-      console.log("here 1");
       state.isLoading = true;
     });
     builder.addCase(loginUser.fulfilled, (state, action) => {
       state.isLoading = false;
       state.error = false;
       state.isAuthenticated = true;
-      // state.isCheckingAuth = true;
       state.users = [];
-      console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
       state.users.push(action.payload);
       state.message = "";
       toast.success<unknown>(
@@ -205,7 +184,6 @@ export const userApi = createSlice({
       );
     });
     builder.addCase(loginUser.rejected, (state, action) => {
-      console.log("here 3");
       state.error = true;
       state.isLoading = false;
       state.message = action.payload;
@@ -218,25 +196,18 @@ export const userApi = createSlice({
 
     //Logout
     builder.addCase(logout.pending, (state) => {
-      console.log("here 1");
       state.isLoading = true;
       state.isCheckingAuth = false;
-      // localStorage.removeItem("isAuthenticated");
-      // localStorage.removeItem("users");
     });
     builder.addCase(logout.fulfilled, (state, action) => {
-      console.log("here 2");
-      console.log("🚀 ~ builder.addCase ~ action:", action.payload);
       state.isLoading = false;
       state.error = false;
       state.isCheckingAuth = true;
       state.message = action.payload.message;
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("users");
-      // localStorage.clear();
     });
     builder.addCase(logout.rejected, (state, action) => {
-      console.log("here 3");
       state.error = true;
       state.isLoading = false;
       state.isCheckingAuth = false;
@@ -245,14 +216,12 @@ export const userApi = createSlice({
 
     //Verify-Email
     builder.addCase(verifyEmail.pending, (state) => {
-      console.log("here 1");
       state.isLoading = true;
     });
     builder.addCase(verifyEmail.fulfilled, (state, action) => {
       state.isLoading = false;
       state.error = false;
       state.isAuthenticated = true;
-      console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
       state.users = [];
       state.users.push(action.payload);
       toast.success<unknown>(
@@ -262,12 +231,10 @@ export const userApi = createSlice({
       );
     });
     builder.addCase(verifyEmail.rejected, (state, action) => {
-      console.log("here 3");
       state.error = true;
       state.message = action.payload;
       state.isAuthenticated = false;
       state.isLoading = false;
-      console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
       toast.error<unknown>(
         typeof action.payload === "string"
           ? action.payload
@@ -277,19 +244,15 @@ export const userApi = createSlice({
 
     //CHeck-Auth
     builder.addCase(isAuthenticatedFun.pending, (state) => {
-      console.log("here 1");
       state.isLoading = true;
       state.isCheckingAuth = true;
     });
-    builder.addCase(isAuthenticatedFun.fulfilled, (state, action) => {
-      console.log("🚀 ~ builder.addCase ~ action:", action.payload);
-      console.log("here 2");
+    builder.addCase(isAuthenticatedFun.fulfilled, (state) => {
       state.isLoading = false;
       state.error = false;
       state.isCheckingAuth = false;
     });
     builder.addCase(isAuthenticatedFun.rejected, (state, action) => {
-      console.log("here 3");
       state.error = true;
       state.isLoading = false;
       state.isCheckingAuth = false;
