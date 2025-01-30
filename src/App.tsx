@@ -24,18 +24,9 @@ import { useEffect } from "react";
 import { isAuthenticatedFun, logout } from "@/feature/UserSlicer";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "./app/store";
+import ResetPassword from "./auth/ResetPassword";
 
 const saveToLocalStorage = (isAuthenticated: any, users: any) => {
-  if (
-    (localStorage.getItem("users") ||
-      localStorage.getItem("isAuthenticated")) &&
-    isAuthenticated &&
-    users.length > 0 &&
-    users[0]?.user?.isVerified
-  ) {
-    localStorage.removeItem("users");
-    localStorage.removeItem("isAuthenticated");
-  }
   if (
     isAuthenticated &&
     users[0]?.user?.isVerified &&
@@ -92,7 +83,6 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   );
 
   if (isAuthenticatedLoc && checkAuthUserParsed[0]?.user?.isVerified) {
-    console.log("here 222");
     return <Navigate to="/" replace />;
   }
 
@@ -154,6 +144,10 @@ const appRouter = createBrowserRouter([
       {
         path: "/Cart",
         element: <Cart />,
+      },
+      {
+        path: "/Resetpassword",
+        element: <ResetPassword />,
       },
       //admin Service starts here
       {

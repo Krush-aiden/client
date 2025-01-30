@@ -83,7 +83,7 @@ const Navbar = () => {
   }, [message]);
 
   return (
-    <div className="text-white fixed w-full top-0 left-0 z-50 backdrop-filter">
+    <div className="text-white fixed bg-white w-full top-0 left-0 z-50 backdrop-filter">
       <div className="max-w-7xl mx-auto px-2 relative">
         <div className="flex items-center justify-between h-16">
           {/* Left side - FoodSy (with absolute positioning) */}

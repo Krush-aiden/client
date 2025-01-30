@@ -8,11 +8,9 @@ import { signUpUser } from "@/feature/UserSlicer";
 import { AppDispatch } from "@/app/store";
 
 const Signup = () => {
-  // const { toast } = Toaster();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const signupApiRes: any = useSelector<any>((state) => state.user);
-  console.log("🚀 ~ Signup ~ signupApiRes:", signupApiRes);
   const [loading, setLoading] = useState(false);
 
   const [Input, setInput] = useState<SignupInputState>({
@@ -43,10 +41,8 @@ const Signup = () => {
     console.log("Input:", Input);
     // Todo Api implementation starts here
     const payload = { signupUserDetails: Input };
-    console.log("🚀 ~ loginSubmitHandler ~ signupApiRes:", signupApiRes);
 
     try {
-      setLoading(signupApiRes.isLoading);
       await dispatch(signUpUser(payload)).unwrap();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -54,6 +50,7 @@ const Signup = () => {
   };
 
   useEffect(() => {
+    setLoading(signupApiRes.isLoading);
     if (signupApiRes?.users[0]?.success) {
       navigate("/VerifyEmail");
     }
