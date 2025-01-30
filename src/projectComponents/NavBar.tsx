@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -39,13 +40,31 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { logout } from "@/feature/UserSlicer";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { FormEvent } from "react";
+import { FormEvent, useEffect } from "react";
 
 const Navbar = () => {
-  const admin = true;
   const loading = false;
+  const adminVal = localStorage.getItem("users");
+  // console.log("🚀 ~ useEffect ~ admin:", admin);
+
+  let adminParsed = [];
+  if (adminVal) {
+    try {
+      adminParsed = JSON.parse(adminVal);
+      console.log("Parsed users:", adminParsed);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
+  } else {
+    console.log("No data found for users in localStorage.");
+  }
+
+  console.log("🚀 ~ Navbar ~ adminParsed:", adminParsed);
+
+  const admin = adminParsed[0]?.user?.admin;
+  console.log("🚀 ~ Navbar ~ admin:", admin);
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -54,14 +73,18 @@ const Navbar = () => {
     e.preventDefault();
     try {
       dispatch(logout()).unwrap();
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("users");
-      window.location.reload();
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
+  const { message }: any = useSelector<any>((state) => state.user);
+
+  useEffect(() => {
+    if (message == "Logged out successfully.") {
+      window.location.reload();
+    }
+  }, [message]);
 
   return (
     <div className="text-white fixed w-full top-0 left-0 z-50 backdrop-filter">
@@ -175,6 +198,26 @@ const Navbar = () => {
 export default Navbar;
 
 const MobileNavbar = () => {
+  const adminVal = localStorage.getItem("users");
+  // console.log("🚀 ~ useEffect ~ admin:", admin);
+
+  let adminParsed = [];
+  if (adminVal) {
+    try {
+      adminParsed = JSON.parse(adminVal);
+      console.log("Parsed users:", adminParsed);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
+  } else {
+    console.log("No data found for users in localStorage.");
+  }
+
+  console.log("🚀 ~ Navbar ~ adminParsed:", adminParsed);
+
+  const admin = adminParsed[0]?.user?.admin;
+  console.log("🚀 ~ Navbar ~ admin:", admin);
+
   const dispatch = useDispatch<AppDispatch>();
 
   return (
@@ -227,27 +270,32 @@ const MobileNavbar = () => {
             <ShoppingCart />
             <span>Cart (0)</span>
           </NavLink>
-          <NavLink
-            to="/admin/menu"
-            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
-          >
-            <SquareMenu />
-            <span>Menu</span>
-          </NavLink>
-          <NavLink
-            to="/admin/restaurant"
-            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
-          >
-            <UtensilsCrossed />
-            <span>Restaurant</span>
-          </NavLink>
-          <NavLink
-            to="/admin/order"
-            className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
-          >
-            <ListOrdered />
-            <span>Restaurant Orders</span>
-          </NavLink>
+
+          {admin && (
+            <>
+              <NavLink
+                to="/admin/menu"
+                className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+              >
+                <SquareMenu />
+                <span>Menu</span>
+              </NavLink>
+              <NavLink
+                to="/admin/restaurant"
+                className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+              >
+                <UtensilsCrossed />
+                <span>Restaurant</span>
+              </NavLink>
+              <NavLink
+                to="/admin/order"
+                className="flex items-center gap-4 hover:bg-gray-200 px-3 py-2 rounded-lg cursor-pointer hover:text-gray-900 font-medium"
+              >
+                <ListOrdered />
+                <span>Restaurant Orders</span>
+              </NavLink>
+            </>
+          )}
         </SheetDescription>
         <SheetFooter className="flex flex-col gap-4">
           <div className="flex flex-row items-center gap-2 mt-2">

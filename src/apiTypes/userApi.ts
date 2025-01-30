@@ -13,6 +13,7 @@ export type signupUserDetails = {
 };
 
 export interface signupUserResponse {
+  message: string;
   fullName: string;
   email: string;
   contact: string;
@@ -25,6 +26,7 @@ export type loginUserDetails = {
 }
 
 export type loginUserResponse = {
+    message: string;
     email: string,
     password: string,
 }

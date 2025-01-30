@@ -25,10 +25,32 @@ import { useEffect } from "react";
 import { isAuthenticatedFun, logout } from "@/feature/UserSlicer";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "./app/store";
-import Loading from "./components/ui/Loading";
 
 const saveToLocalStorage = (isAuthenticated: any, users: any) => {
-  if (isAuthenticated) {
+  console.log("🚀 ~ saveToLocalStorage ~ users:", users);
+  console.log(
+    "🚀 ~ saveToLocalStorage ~ isAuthenticated: ------------================================",
+    isAuthenticated
+  );
+  console.log("🚀 ~ saveToLocalStorage ~ users[0]?.user?.isVerified :", users);
+  if (
+    (localStorage.getItem("users") ||
+      localStorage.getItem("isAuthenticated")) &&
+    isAuthenticated &&
+    users.length > 0 &&
+    users[0]?.user?.isVerified
+  ) {
+    console.log(
+      "removeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    );
+    localStorage.removeItem("users");
+    localStorage.removeItem("isAuthenticated");
+  }
+  if (
+    isAuthenticated &&
+    users[0]?.user?.isVerified &&
+    users[0]?.message.includes("Welcome")
+  ) {
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("users", JSON.stringify(users));
   }
@@ -38,7 +60,7 @@ const saveToLocalStorage = (isAuthenticated: any, users: any) => {
 
   const checkAuthUserVal = localStorage.getItem("users");
 
-  let checkAuthUserParsed = null;
+  let checkAuthUserParsed = [];
   if (checkAuthUserVal) {
     try {
       checkAuthUserParsed = JSON.parse(checkAuthUserVal);
@@ -80,7 +102,9 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
     checkAuthUserParsed[0]?.user?.isVerified
   );
 
-  if (!checkAuthUserParsed[0]?.user?.isVerified) {
+  console.log("🚀 ~ ProtectedRoutes ~ users:", users);
+
+  if (!users[0]?.user?.isVerified && !isAuthenticatedLoc) {
     return <Navigate to="/VerifyEmail" replace />;
   }
 
@@ -92,6 +116,8 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
     (state) => state.user
   );
+  console.log("🚀 ~ AuthenticatedUser ~ isAuthenticated:", isAuthenticated);
+  console.log("🚀 ~ AuthenticatedUser ~ users:", users);
 
   const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
     isAuthenticated,
@@ -112,24 +138,43 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/" replace />;
   }
 
+  console.log("🚀 ~ AuthenticatedUser ~ users:", users);
+  if (
+    users.length > 0 &&
+    users[0]?.user?.isVerified == false &&
+    !isAuthenticatedLoc
+  ) {
+    console.log("inside >>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<,");
+    window.location.reload();
+    return <Navigate to="/VerifyEmail" replace />;
+  }
+
   return children;
 };
 
 const AdminRout = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticatedLoc =
-    localStorage.getItem("isAuthenticated") === "true" ? true : false;
+  const { isAuthenticated, users }: any = useSelector<any>(
+    (state) => state.user
+  );
+
+  const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
+    isAuthenticated,
+    users
+  );
 
   console.log(
     "🚀 ~ ProtectedRoutes ~ isAuthenticatedLoc:========================================== 3333 AuthenticatedUser",
     isAuthenticatedLoc
   );
 
-  //   if (!isAuthenticated) {
-  //     return <Navigate to="/login" replace />;
-  //   }
-  //   if (!user?.admin) {
-  //     return <Navigate to="/" replace />;
-  //   }
+  console.log(
+    "🚀 ~ AdminRout ~ checkAuthUserParsed:",
+    checkAuthUserParsed[0]?.user?.admin
+  );
+
+  if (!checkAuthUserParsed[0]?.user?.admin) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };
@@ -231,7 +276,8 @@ const appRouter = createBrowserRouter([
     path: "/VerifyEmail",
     element: (
       <AuthenticatedUser>
-        <VerifyEmail />
+        {" "}
+        <VerifyEmail />{" "}
       </AuthenticatedUser>
     ),
   },
@@ -239,24 +285,14 @@ const appRouter = createBrowserRouter([
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoading }: any = useSelector<any>((state) => state.user);
 
   useEffect(() => {
-    // if (users.length <= 0) {
-    console.log("inside effect");
-    // const { isAuthenticated, users }: any = useSelector<any>(
-    //   (state) => state.user
-    // );
-
     const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
       false,
       null
     );
 
-    console.log("🚀 ~ useEffect ~ checkAuthUserParsed:", checkAuthUserParsed);
-    console.log("🚀 ~ useEffect ~ isAuthenticatedLoc:", isAuthenticatedLoc);
-    if (!checkAuthUserParsed && !isAuthenticatedLoc) {
-      console.log("cookie remove ==============<<<<<<<<<<<<>>>>>>>>>>>>>>>.");
+    if (!checkAuthUserParsed.length && !isAuthenticatedLoc) {
       dispatch(logout());
     } else {
       dispatch(isAuthenticatedFun());
@@ -264,7 +300,6 @@ function App() {
     // }
   }, [isAuthenticatedFun]);
 
-  if (isLoading) return <Loading />;
   return (
     <main>
       <RouterProvider router={appRouter}></RouterProvider>

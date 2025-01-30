@@ -1,7 +1,7 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Loader2, Lock, Mail } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { NavLink } from "react-router-dom";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { LoginInputState, userLoginSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
@@ -17,7 +17,6 @@ const Login = () => {
     const { name, value } = e.target;
     setInput({ ...Input, [name]: value });
   };
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState<Partial<LoginInputState>>({});
@@ -26,12 +25,12 @@ const Login = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const loginApiRes: any = useSelector<any>((state) => state.user);
-  console.log("🚀 ~ loginSubmitHandler ~ loginApiRes:", loginApiRes);
+  const { users, isLoading }: any = useSelector<any>((state) => state.user);
+  // console.log("🚀 ~ loginSubmitHandler ~ loginApiRes:", loginApiRes);
 
-  if (loginApiRes?.users[0]?.success) {
+  if (users[0]?.success) {
     console.log("here--->>>");
-    navigate("/");
+    // navigate("/");
   }
 
   const loginSubmitHandler = (e: FormEvent) => {
@@ -51,10 +50,16 @@ const Login = () => {
     // Dispatch the action with the correct payload structure
 
     // if (loginApiRes.users.length <= 0) {
-    dispatch(loginUser(payload));
-    setLoading(true);
-    // }
+    try {
+      dispatch(loginUser(payload)).unwrap();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
+
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

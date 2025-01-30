@@ -1,7 +1,7 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Contact, Loader2, Lock, Mail, User } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SignupInputState, userSignupSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "@/feature/UserSlicer";
@@ -32,10 +32,6 @@ const Signup = () => {
   const [errorsMsg, setErrorsMsg] = useState<Partial<SignupInputState>>({});
   const [ErrorState, setErrorState] = useState<boolean>();
 
-  if (signupApiRes?.users[0]?.success) {
-    navigate("/VerifyEmail");
-  }
-
   const loginSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
     const result = userSignupSchema.safeParse(Input);
@@ -52,11 +48,25 @@ const Signup = () => {
     const payload = { signupUserDetails: Input };
     // Dispatch the action with the correct payload structure
     console.log("🚀 ~ loginSubmitHandler ~ signupApiRes:", signupApiRes);
-    if (signupApiRes.users.length <= 0) {
+    // if (signupApiRes.users.length <= 0) {
+
+    // }
+    try {
       setLoading(signupApiRes.isLoading);
-      dispatch(signUpUser(payload));
+      await dispatch(signUpUser(payload)).unwrap();
+      // window.location.reload();
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
+    navigate("/verifyEmail");
   };
+
+  useEffect(() => {
+    if (signupApiRes?.users[0]?.success) {
+      console.log("🚀 ~ useEffect ~ signupApiRes:", signupApiRes);
+      navigate("/VerifyEmail");
+    }
+  }, [signupApiRes, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

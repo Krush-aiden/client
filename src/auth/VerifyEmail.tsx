@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { useState, useRef, FormEvent } from "react";
+import { useState, useRef, FormEvent, useEffect } from "react";
 import { verifyEmail } from "@/feature/UserSlicer";
 import { AppDispatch } from "@/app/store";
 import { useDispatch, useSelector } from "react-redux";
@@ -42,18 +42,11 @@ const VerifyEmail = () => {
   };
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-
-  const verifyEmailCodeRes: any = useSelector<any>((state) => state.user);
-  console.log("🚀 ~ VerifyEmail ~ verifyEmailRes:", verifyEmailCodeRes);
-
-  if (
-    verifyEmailCodeRes?.users[0]?.success &&
-    verifyEmailCodeRes?.users[0]?.user?.isVerified
-  ) {
-    navigate("/");
-  }
-
   const [loading, setLoading] = useState(false);
+
+  const { isLoading, users }: any = useSelector<any>((state) => state.user);
+  // console.log("🚀 ~ VerifyEmail ~ verifyEmailRes:", verifyEmailCodeRes);
+
   const submitHandler = async (e: FormEvent) => {
     e.preventDefault();
     const verificationCodeVal = otp.join("");
@@ -64,13 +57,23 @@ const VerifyEmail = () => {
     console.log("🚀 ~ submitHandler ~ verificationCode:", verificationCodeVal);
     try {
       if (verificationCodeVal !== "") {
-        dispatch(verifyEmail({ verifyEmailCode: verificationCodeVal }));
-        setLoading(verifyEmailCodeRes.isLoading);
+        dispatch(
+          await verifyEmail({ verifyEmailCode: verificationCodeVal })
+        ).unwrap();
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    setLoading(isLoading);
+    console.log("🚀 ~ useEffect ~ users:", users);
+    if (users[0]?.success && users[0]?.user?.isVerified) {
+      console.log("navigate ====>>>");
+      navigate("/login");
+    }
+  }, [navigate, isLoading, users]);
 
   return (
     <div className="flex items-center justify-center h-screen w-full bg-white">

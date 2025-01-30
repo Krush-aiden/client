@@ -163,15 +163,25 @@ export const userApi = createSlice({
     builder.addCase(signUpUser.fulfilled, (state, action) => {
       state.isLoading = false;
       console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
-      toast.success("working fine");
+
+      state.users = [];
       state.users.push(action.payload);
+      toast.success<unknown>(
+        typeof action.payload.message === "string"
+          ? action.payload.message
+          : "An error occurred"
+      );
     });
     builder.addCase(signUpUser.rejected, (state, action) => {
       console.log("here 3");
       state.error = true;
       state.isLoading = false;
       state.message = action.payload;
-      toast.error("not working fine");
+      toast.error<unknown>(
+        typeof action.payload === "string"
+          ? action.payload
+          : "An error occurred"
+      );
     });
 
     //Login
@@ -184,15 +194,26 @@ export const userApi = createSlice({
       state.error = false;
       state.isAuthenticated = true;
       // state.isCheckingAuth = true;
+      state.users = [];
       console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
       state.users.push(action.payload);
       state.message = "";
+      toast.success<unknown>(
+        typeof action.payload.message === "string"
+          ? action.payload.message
+          : "An error occurred"
+      );
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       console.log("here 3");
       state.error = true;
       state.isLoading = false;
       state.message = action.payload;
+      toast.error<unknown>(
+        typeof action.payload === "string"
+          ? action.payload
+          : "An error occurred"
+      );
     });
 
     //Logout
@@ -230,7 +251,9 @@ export const userApi = createSlice({
     builder.addCase(verifyEmail.fulfilled, (state, action) => {
       state.isLoading = false;
       state.error = false;
+      state.isAuthenticated = true;
       console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
+      state.users = [];
       state.users.push(action.payload);
       toast.success<unknown>(
         typeof action.payload.message === "string"
@@ -242,6 +265,7 @@ export const userApi = createSlice({
       console.log("here 3");
       state.error = true;
       state.message = action.payload;
+      state.isAuthenticated = false;
       state.isLoading = false;
       console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
       toast.error<unknown>(
@@ -255,16 +279,14 @@ export const userApi = createSlice({
     builder.addCase(isAuthenticatedFun.pending, (state) => {
       console.log("here 1");
       state.isLoading = true;
-      state.isCheckingAuth = false;
+      state.isCheckingAuth = true;
     });
     builder.addCase(isAuthenticatedFun.fulfilled, (state, action) => {
+      console.log("🚀 ~ builder.addCase ~ action:", action.payload);
       console.log("here 2");
       state.isLoading = false;
       state.error = false;
-      if (state.users.length <= 0) {
-        state.users.push(action.payload);
-      }
-      state.isCheckingAuth = true;
+      state.isCheckingAuth = false;
     });
     builder.addCase(isAuthenticatedFun.rejected, (state, action) => {
       console.log("here 3");
