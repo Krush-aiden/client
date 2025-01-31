@@ -37,3 +37,42 @@ export type verifyEmailDetails = {
 export type verifyEmailResponse = {
   verifyEmailCode : string
 }
+
+export type forgetPasswordEmail = {
+  email:string
+}
+
+export type forgetPasswordEmailRes = {
+  message: string;
+  email:string 
+}
+
+export type userNewPasswordDetails = {
+  newPassword: string;
+  token: string | undefined;  // Allow token to be string or undefined
+}
+
+export type userNewPasswordDetailsRes = {
+  newPassword : string;
+  token: string;
+  message : string;
+}
+
+export type updateProfileDetails = {
+  fullname: string,
+  email: string,
+  address: string,
+  city: string,
+  country: string,
+  profilePictureName: string,
+}
+
+export type updateProfileDetailsRes = {
+  fullname: string,
+  email: string,
+  address: string,
+  city: string,
+  country: string,
+  profilePictureName: string,
+  message:string,
+}

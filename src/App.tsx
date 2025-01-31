@@ -218,6 +218,14 @@ const appRouter = createBrowserRouter([
       </AuthenticatedUser>
     ),
   },
+  {
+    path: "/resetpassword/:token",
+    element: (
+      <AuthenticatedUser>
+        <ResetPassword />
+      </AuthenticatedUser>
+    ),
+  },
 ]);
 
 function App() {

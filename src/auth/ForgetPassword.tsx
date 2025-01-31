@@ -1,15 +1,18 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Loader2, Mail } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { forgetPasswordSchema, userForgetPassword } from "@/schema/userSchema";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "@/app/store";
+import { forgetPassword } from "@/feature/UserSlicer";
 
 const ForgetPassword = () => {
-  const loading = false;
-  
   const [Input, setInput] = useState<userForgetPassword>({
     email: "",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const changeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,7 +23,11 @@ const ForgetPassword = () => {
 
   console.log("errorMsg", errorMsg);
   const [errorState, setErrorState] = useState<boolean>();
-  console.log(errorState);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+
+  const { isLoading, success }: any = useSelector<any>((state) => state.user);
 
   const loginSubmitHandler = (e: FormEvent) => {
     e.preventDefault();
@@ -34,9 +41,22 @@ const ForgetPassword = () => {
       return;
     }
     console.log(Input);
+    const payload = { forgetPasswordEmail: Input };
     // Todo Api implementation starts here
+    console.log("🚀 ~ loginSubmitHandler ~ payload:", payload);
+    try {
+      dispatch(forgetPassword(payload)).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
+  useEffect(() => {
+    setLoading(isLoading);
+    if (success) {
+      navigate("/login");
+    }
+  }, [navigate, isLoading, success]);
   return (
     <div className="flex items-center justify-center min-h-screen">
       <form
@@ -45,7 +65,9 @@ const ForgetPassword = () => {
       >
         <div className="mb-4">
           <h3 className="font-bold text-2xl">Forget Password</h3>
-          <span className="text-sm">Enter your email address to reset your password</span>
+          <span className="text-sm">
+            Enter your email address to reset your password
+          </span>
         </div>
         <div className="mb-6">
           <div className="relative">
@@ -65,13 +87,13 @@ const ForgetPassword = () => {
         </div>
         <div className="mb-10">
           {loading ? (
-           <button
-           disabled
-           className="w-full bg-orange flex items-center justify-center py-3 px-4 opacity-50 cursor-not-allowed"
-         >
-           <Loader2 className="h-6 w-6 animate-spin mr-2" />
-           Please wait
-         </button>
+            <button
+              disabled
+              className="w-full bg-orange flex items-center justify-center py-3 px-4 opacity-50 cursor-not-allowed"
+            >
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              Please wait
+            </button>
           ) : (
             <button
               type="submit"
@@ -83,7 +105,7 @@ const ForgetPassword = () => {
         </div>
         <Separator className="w-full h-px bg-gray-300 my-4" />
         <p className="mr-4">
-          Back to {" "}
+          Back to{" "}
           <NavLink to="/Login" className="text-blue-500">
             Login
           </NavLink>

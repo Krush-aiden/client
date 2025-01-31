@@ -1,7 +1,9 @@
+import { AppDispatch } from "@/app/store";
+import { updateProfile } from "@/feature/UserSlicer";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Loader2, LocateIcon, Mail, MapPin, MapPinHouse } from "lucide-react";
-import { FormEvent, useRef, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 
 const Profile = () => {
   const loading = false;
@@ -16,26 +18,29 @@ const Profile = () => {
     address: "",
     city: "",
     country: "",
-    profilePicture: "",
+    profilePictureName: "",
   });
-  console.log("🚀 ~ Profile ~ profileData:", profileData);
 
   const profileDataChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfileData({ ...profileData, [name]: value });
   };
+  const dispatch = useDispatch<AppDispatch>();
+  const [profileUrl, setprofileUrl] = useState("");
 
   const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log("🚀 ~ setProfileData ~ profilePicture:", file?.name);
+
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        // setProfilePic(result);
         setProfileData((previous) => ({
           ...previous,
-          profilePicture: result,
+          profilePictureName: file.name, // Store the data URL
         }));
+        setprofileUrl(result);
       };
       reader.readAsDataURL(file);
     }
@@ -43,9 +48,47 @@ const Profile = () => {
 
   const updateProfileHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // console.log("🚀 ~ Pofile ~ profileData:", profileData);
+    console.log("🚀 ~ Profile ~ profileData:", profileData);
     // Todo Update Profile Data update API Implementation
+    const payload = { updateProfileDetails: profileData };
+    try {
+      dispatch(updateProfile(payload)).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  useEffect(() => {
+    const checkAuthUserVal = localStorage.getItem("users");
+
+    let checkAuthUserParsed = [];
+    if (checkAuthUserVal) {
+      try {
+        checkAuthUserParsed = JSON.parse(checkAuthUserVal);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.log("No data found for users in localStorage.");
+    }
+
+    console.log("🚀 ~ useEffect ~ checkAuthUserParsed:", checkAuthUserParsed);
+
+    setProfileData({
+      fullname: checkAuthUserParsed[0]?.user.fullName,
+      email: checkAuthUserParsed[0]?.user.email,
+      address: checkAuthUserParsed[0]?.user.address.includes("update")
+        ? ""
+        : checkAuthUserParsed[0]?.user.address,
+      city: checkAuthUserParsed[0]?.user.city.includes("update")
+        ? ""
+        : checkAuthUserParsed[0]?.user.city,
+      country: checkAuthUserParsed[0]?.user.country.includes("update")
+        ? ""
+        : checkAuthUserParsed[0]?.user.country,
+      profilePictureName: "",
+    });
+  }, []);
 
   return (
     <form onSubmit={updateProfileHandler} className="max-w-7xl mx-auto my-24">
@@ -56,9 +99,7 @@ const Profile = () => {
           <Avatar>
             <AvatarImage
               className="relative text-xs rounded-full w-32 h-32 object-cover"
-              src={
-                profileData.profilePicture || "https://github.com/shadcn.png"
-              } // Default or selected profile image
+              src={profileUrl || "https://github.com/shadcn.png"} // Default or selected profile image
               alt="Profile picture"
             />
             <AvatarFallback>CN</AvatarFallback>
@@ -104,7 +145,7 @@ const Profile = () => {
       {/* Email Input Section */}
       <div className="grid md:grid-cols-4 md:gap-6 gap-5 my-10">
         {/* Email Section */}
-        <div className="flex items-center gap-4 rounded-md p-3 bg-white shadow-sm border border-gray-300">
+        <div className="flex items-center gap-4 rounded-md p-3 bg-gray-200 shadow-sm border border-gray-300">
           <Mail className="text-gray-500 w-5 h-5" />
           <div className="w-full">
             <label
@@ -114,8 +155,9 @@ const Profile = () => {
               Email
             </label>
             <input
+              disabled
               id="email"
-              className="w-full text-gray-600 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg p-3 mt-1"
+              className="w-full text-xs text-gray-600 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg p-3 mt-1"
               onChange={profileDataChangeHandler}
               value={profileData.email}
               name="email"
@@ -198,14 +240,6 @@ const Profile = () => {
             Update
           </button>
         )}
-        <NavLink to={"/Resetpassword"}>
-          <button
-            // onClick={resetPasswordHandler} // Add the handler function for reset
-            className="bg-orange hover:bg-hoverOrange flex items-center justify-center px-6 py-2 rounded-lg text-black"
-          >
-            Reset Password
-          </button>
-        </NavLink>
       </div>
     </form>
   );

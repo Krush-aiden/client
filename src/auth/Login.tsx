@@ -36,6 +36,7 @@ const Login = () => {
     }
     const payload = { loginUserDetails: Input };
 
+    console.log("🚀 ~ loginSubmitHandler ~ payload:", payload);
     try {
       dispatch(loginUser(payload)).unwrap();
     } catch (error) {
