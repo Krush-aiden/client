@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable no-prototype-builtins */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import {
@@ -188,11 +190,33 @@ export const updateProfile = createAsyncThunk<
 >("updateProfile", async ({ updateProfileDetails }, { rejectWithValue }) => {
   try {
     console.log("🚀 ~ > ~ updateProfileDetails:", updateProfileDetails);
-    const response = await axios.post(
-      `${API_USER}/profile/update`,
-      { updateProfileDetails },
-      { withCredentials: true }
-    );
+
+    const formData = new FormData();
+
+    for (const key in updateProfileDetails) {
+      if (updateProfileDetails.hasOwnProperty(key)) {
+        formData.append(
+          key,
+          updateProfileDetails[key as keyof updateProfileDetails]
+        );
+      }
+    }
+
+    // formData.append("profilePicture",file);
+
+    console.log("🚀 ~ > ~ formData:", formData);
+
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    const response = await axios.post(`${API_USER}/profile/update`, formData, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data", // Ensure the correct content type is set
+      },
+    });
+
     return response?.data;
   } catch (error: any) {
     console.log(error);
@@ -220,8 +244,11 @@ export const userApi = createSlice({
       state.isLoading = true;
     });
     builder.addCase(updateProfile.fulfilled, (state, action) => {
-      console.log("🚀 ~ builder.addCase ~ action:", action);
+      console.log("🚀 ~ builder.addCase ~ action:", action.payload);
       state.isLoading = false;
+      state.users = [];
+      state.users.push(action.payload);
+      localStorage.setItem("users", JSON.stringify([action.payload]));
       // localStorage.setItem("users", JSON.stringify(users));
     });
     builder.addCase(updateProfile.rejected, (state) => {

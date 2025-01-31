@@ -41,7 +41,7 @@ import { Separator } from "@/components/ui/separator";
 import { logout } from "@/feature/UserSlicer";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { FormEvent, useEffect } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 const Navbar = () => {
   const loading = false;
@@ -58,6 +58,9 @@ const Navbar = () => {
   } else {
     console.log("No data found for users in localStorage.");
   }
+  const [profileImgUrl, setProfileImg] = useState(
+    "https://github.com/shadcn.png"
+  );
 
   const admin = adminParsed[0]?.user?.admin;
   console.log("🚀 ~ Navbar ~ admin:", admin);
@@ -80,6 +83,19 @@ const Navbar = () => {
     if (message == "Logged out successfully.") {
       window.location.reload();
     }
+    const checkAuthUserVal = localStorage.getItem("users");
+
+    let checkAuthUserParsed = [];
+    if (checkAuthUserVal) {
+      try {
+        checkAuthUserParsed = JSON.parse(checkAuthUserVal);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.log("No data found for users in localStorage.");
+    }
+    setProfileImg(checkAuthUserParsed[0]?.user?.profilePictureName);
   }, [message]);
 
   return (
@@ -156,7 +172,7 @@ const Navbar = () => {
               <Avatar>
                 <AvatarImage
                   className="relative left-2 text-xs rounded-full size-10"
-                  src="https://github.com/shadcn.png"
+                  src={profileImgUrl}
                   alt="@shadcn"
                 />
                 <AvatarFallback>CN</AvatarFallback>

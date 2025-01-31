@@ -3,34 +3,32 @@ import { updateProfile } from "@/feature/UserSlicer";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Loader2, LocateIcon, Mail, MapPin, MapPinHouse } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const Profile = () => {
-  const loading = false;
-
   const imageRef = useRef<HTMLInputElement | null>(null);
   //   const [selectedProfilePic, setProfilePic] = useState<string>("");
   //   const [username, setUsername] = useState<string>("");
 
   const [profileData, setProfileData] = useState({
-    fullname: "",
+    fullName: "",
     email: "",
     address: "",
     city: "",
     country: "",
-    profilePictureName: "",
+    profilePictureName: {},
   });
-
+  const [loading, setLoading] = useState(false);
   const profileDataChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfileData({ ...profileData, [name]: value });
   };
   const dispatch = useDispatch<AppDispatch>();
   const [profileUrl, setprofileUrl] = useState("");
+  const { isLoading }: any = useSelector((state: any) => state.user);
 
   const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("🚀 ~ setProfileData ~ profilePicture:", file?.name);
 
     if (file) {
       const reader = new FileReader();
@@ -38,7 +36,7 @@ const Profile = () => {
         const result = reader.result as string;
         setProfileData((previous) => ({
           ...previous,
-          profilePictureName: file.name, // Store the data URL
+          profilePictureName: file, // Store the data URL
         }));
         setprofileUrl(result);
       };
@@ -48,9 +46,9 @@ const Profile = () => {
 
   const updateProfileHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("🚀 ~ Profile ~ profileData:", profileData);
     // Todo Update Profile Data update API Implementation
     const payload = { updateProfileDetails: profileData };
+
     try {
       dispatch(updateProfile(payload)).unwrap();
     } catch (error) {
@@ -72,10 +70,8 @@ const Profile = () => {
       console.log("No data found for users in localStorage.");
     }
 
-    console.log("🚀 ~ useEffect ~ checkAuthUserParsed:", checkAuthUserParsed);
-
     setProfileData({
-      fullname: checkAuthUserParsed[0]?.user.fullName,
+      fullName: checkAuthUserParsed[0]?.user.fullName,
       email: checkAuthUserParsed[0]?.user.email,
       address: checkAuthUserParsed[0]?.user.address.includes("update")
         ? ""
@@ -86,9 +82,11 @@ const Profile = () => {
       country: checkAuthUserParsed[0]?.user.country.includes("update")
         ? ""
         : checkAuthUserParsed[0]?.user.country,
-      profilePictureName: "",
+      profilePictureName: checkAuthUserParsed[0]?.user?.profilePictureName,
     });
-  }, []);
+    setprofileUrl(checkAuthUserParsed[0]?.user?.profilePictureName);
+    setLoading(isLoading);
+  }, [isLoading]);
 
   return (
     <form onSubmit={updateProfileHandler} className="max-w-7xl mx-auto my-24">
@@ -115,8 +113,8 @@ const Profile = () => {
             </label>
             <input
               type="text"
-              name="fullname"
-              value={profileData.fullname}
+              name="fullName"
+              value={profileData.fullName}
               onChange={profileDataChangeHandler}
               placeholder="Enter your username"
               className="border border-gray-300 p-3 rounded-md w-64 sm:w-80 md:w-96 bg-white" // Adjusted widths and padding

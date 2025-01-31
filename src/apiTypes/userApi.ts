@@ -2,7 +2,7 @@
 
 
 // Defining the structure of the user data
-export const API_USER: string = "http://localhost:8000/api/v1/user";
+export const API_USER: string = "http://localhost:9001/api/v1/user";
 
 
 export type signupUserDetails = {
@@ -59,16 +59,16 @@ export type userNewPasswordDetailsRes = {
 }
 
 export type updateProfileDetails = {
-  fullname: string,
+  fullName: string,
   email: string,
   address: string,
   city: string,
   country: string,
-  profilePictureName: string,
+  profilePictureName: any,
 }
 
 export type updateProfileDetailsRes = {
-  fullname: string,
+  fullName: string,
   email: string,
   address: string,
   city: string,

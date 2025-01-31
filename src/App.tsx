@@ -27,6 +27,7 @@ import { AppDispatch } from "./app/store";
 import ResetPassword from "./auth/ResetPassword";
 
 const saveToLocalStorage = (isAuthenticated: any, users: any) => {
+  console.log("🚀 ~ saveToLocalStorage ~ users:", users);
   if (
     isAuthenticated &&
     users[0]?.user?.isVerified &&
