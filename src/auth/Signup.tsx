@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SignupInputState, userSignupSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
-import { signUpUser } from "@/feature/UserSlicer";
+import { resetSuccess, signUpUser } from "@/feature/UserSlicer";
 import { AppDispatch } from "@/app/store";
 
 const Signup = () => {
@@ -51,10 +51,15 @@ const Signup = () => {
 
   useEffect(() => {
     setLoading(signupApiRes.isLoading);
-    if (signupApiRes?.users[0]?.success) {
+
+    if (
+      signupApiRes?.users[0]?.success &&
+      !signupApiRes?.users[0]?.message.includes("Password")
+    ) {
       navigate("/VerifyEmail");
+      dispatch(resetSuccess());
     }
-  }, [signupApiRes, navigate]);
+  }, [dispatch, signupApiRes, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

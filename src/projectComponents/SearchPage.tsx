@@ -35,7 +35,9 @@ function SearchPage() {
             />
             {/* Make the search button full width */}
             <button
-              onClick={() => navigate(`/Search/${searchText}`)}
+              onClick={() => {
+                if (searchText) navigate(`/Search/${searchText}`);
+              }}
               className="bg-orange hover:bg-hoverOrange text-white px-3 py-2 rounded-md w-20 mt-0 md:md-0"
             >
               Search

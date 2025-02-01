@@ -6,6 +6,7 @@ import { forgetPasswordSchema, userForgetPassword } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
 import { forgetPassword } from "@/feature/UserSlicer";
+import { resetSuccess } from "@/feature/UserSlicer";
 
 const ForgetPassword = () => {
   const [Input, setInput] = useState<userForgetPassword>({
@@ -55,8 +56,10 @@ const ForgetPassword = () => {
     setLoading(isLoading);
     if (success) {
       navigate("/login");
+      // window.location.reload();
+      dispatch(resetSuccess());
     }
-  }, [navigate, isLoading, success]);
+  }, [dispatch, navigate, isLoading, success]);
   return (
     <div className="flex items-center justify-center min-h-screen">
       <form

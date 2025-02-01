@@ -1,6 +1,5 @@
-/* eslint-disable prefer-const */
 /* eslint-disable no-prototype-builtins */
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import {
   API_USER,
@@ -189,10 +188,7 @@ export const updateProfile = createAsyncThunk<
   updateProfileDetailsPayload
 >("updateProfile", async ({ updateProfileDetails }, { rejectWithValue }) => {
   try {
-    console.log("🚀 ~ > ~ updateProfileDetails:", updateProfileDetails);
-
     const formData = new FormData();
-
     for (const key in updateProfileDetails) {
       if (updateProfileDetails.hasOwnProperty(key)) {
         formData.append(
@@ -201,22 +197,12 @@ export const updateProfile = createAsyncThunk<
         );
       }
     }
-
-    // formData.append("profilePicture",file);
-
-    console.log("🚀 ~ > ~ formData:", formData);
-
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
     const response = await axios.post(`${API_USER}/profile/update`, formData, {
       withCredentials: true,
       headers: {
         "Content-Type": "multipart/form-data", // Ensure the correct content type is set
       },
     });
-
     return response?.data;
   } catch (error: any) {
     console.log(error);
@@ -227,193 +213,159 @@ export const updateProfile = createAsyncThunk<
 });
 
 //MARK:userApi
+interface UserState {
+  users: unknown[];
+  isLoading: boolean;
+  error: boolean;
+  message: string;
+  success: boolean;
+  isAuthenticated: boolean;
+}
+
+const initialState: UserState = {
+  users: [],
+  isLoading: false,
+  error: false,
+  message: "",
+  success: false,
+  isAuthenticated: false,
+};
+
+const handlePending = (state: UserState) => {
+  state.isLoading = true;
+  state.error = false;
+};
+
+const handleFulfilled = (
+  state: UserState,
+  action: PayloadAction<any>,
+  successMessage?: string
+) => {
+  state.isLoading = false;
+  state.success = true;
+  state.error = false;
+  if (action.payload) {
+    state.users = [action.payload];
+    if (successMessage) {
+      toast.success(successMessage);
+    }
+  }
+};
+
+const handleRejected = (
+  state: UserState,
+  action: PayloadAction<any>,
+  errorMessage?: string
+) => {
+  state.isLoading = false;
+  state.error = true;
+  state.message = action.payload;
+  if (errorMessage) {
+    toast.error(errorMessage);
+  }
+};
+
 export const userApi = createSlice({
   name: "userApi",
-  initialState: {
-    users: [] as unknown[],
-    isLoading: false,
-    error: false,
-    message: "" as unknown,
-    success: false,
-    isAuthenticated: false as unknown,
+  initialState,
+  reducers: {
+    resetSuccess(state) {
+      state.success = false;
+    },
   },
-  reducers: {},
   extraReducers: (builder) => {
-    //updateProfile
-    builder.addCase(updateProfile.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(updateProfile.fulfilled, (state, action) => {
-      console.log("🚀 ~ builder.addCase ~ action:", action.payload);
-      state.isLoading = false;
-      state.users = [];
-      state.users.push(action.payload);
-      localStorage.setItem("users", JSON.stringify([action.payload]));
-      // localStorage.setItem("users", JSON.stringify(users));
-    });
-    builder.addCase(updateProfile.rejected, (state) => {
-      state.isLoading = false;
-    });
-    //resetPassword
-    builder.addCase(resetPassword.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(resetPassword.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.error = false;
-      state.success = true;
-      toast.success<unknown>(
-        typeof action.payload.message === "string"
-          ? action.payload.message
-          : "An error occurred"
-      );
-    });
-    builder.addCase(resetPassword.rejected, (state, action) => {
-      state.error = true;
-      state.isLoading = false;
-      toast.error<unknown>(
-        typeof action.payload === "string"
-          ? action.payload
-          : "An error occurred"
-      );
-    });
+    builder
+      .addCase(updateProfile.pending, handlePending)
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        handleFulfilled(state, action, "Profile updated successfully");
+        localStorage.setItem("users", JSON.stringify(state.users));
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to update profile");
+      });
 
-    //SignUp
-    builder.addCase(signUpUser.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(signUpUser.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.users = [];
-      state.users.push(action.payload);
-      toast.success<unknown>(
-        typeof action.payload.message === "string"
-          ? action.payload.message
-          : "An error occurred"
-      );
-    });
-    builder.addCase(signUpUser.rejected, (state, action) => {
-      state.error = true;
-      state.isLoading = false;
-      state.message = action.payload;
-      toast.error<unknown>(
-        typeof action.payload === "string"
-          ? action.payload
-          : "An error occurred"
-      );
-    });
+    builder
+      .addCase(resetPassword.pending, handlePending)
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        handleFulfilled(state, action, "Password reset successfully");
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to reset password");
+      });
 
-    //Login
-    builder.addCase(loginUser.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(loginUser.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.error = false;
-      state.isAuthenticated = true;
-      state.users = [];
-      state.users.push(action.payload);
-      state.message = "";
-      toast.success<unknown>(
-        typeof action.payload.message === "string"
-          ? action.payload.message
-          : "An error occurred"
-      );
-    });
-    builder.addCase(loginUser.rejected, (state, action) => {
-      state.error = true;
-      state.isLoading = false;
-      state.message = action.payload;
-      toast.error<unknown>(
-        typeof action.payload === "string"
-          ? action.payload
-          : "An error occurred"
-      );
-    });
+    builder
+      .addCase(signUpUser.pending, handlePending)
+      .addCase(signUpUser.fulfilled, (state, action) => {
+        handleFulfilled(state, action, "Sign up successful");
+      })
+      .addCase(signUpUser.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to sign up");
+      });
 
-    //Logout
-    builder.addCase(logout.pending, (state) => {
-      // state.isLoading = true;
-      state.error = false;
-    });
-    builder.addCase(logout.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.error = false;
-      state.message = action.payload.message;
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("users");
-    });
-    builder.addCase(logout.rejected, (state, action) => {
-      state.error = true;
-      state.isLoading = false;
-      state.message = action.payload;
-    });
+    builder
+      .addCase(loginUser.pending, handlePending)
+      .addCase(loginUser.fulfilled, (state, action) => {
+        handleFulfilled(state, action, "Login successful");
+        state.isAuthenticated = true;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to login");
+      });
 
-    //Verify-Email
-    builder.addCase(verifyEmail.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(verifyEmail.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.error = false;
-      state.isAuthenticated = true;
-      state.users = [];
-      state.users.push(action.payload);
-      toast.success<unknown>(
-        typeof action.payload.message === "string"
-          ? action.payload.message
-          : "An error occurred"
-      );
-    });
-    builder.addCase(verifyEmail.rejected, (state, action) => {
-      state.error = true;
-      state.message = action.payload;
-      state.isAuthenticated = false;
-      state.isLoading = false;
-      toast.error<unknown>(
-        typeof action.payload === "string"
-          ? action.payload
-          : "An error occurred"
-      );
-    });
+    builder
+      .addCase(logout.pending, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(logout.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = false;
+        state.message = action.payload.message;
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("users");
+      })
+      .addCase(logout.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to logout");
+      });
 
-    //CHeck-Auth
-    builder.addCase(isAuthenticatedFun.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(isAuthenticatedFun.fulfilled, (state) => {
-      state.isLoading = false;
-      state.error = false;
-    });
-    builder.addCase(isAuthenticatedFun.rejected, (state, action) => {
-      state.error = true;
-      state.isLoading = false;
-      state.message = action.payload;
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("users");
-    });
+    builder
+      .addCase(verifyEmail.pending, handlePending)
+      .addCase(verifyEmail.fulfilled, (state, action) => {
+        handleFulfilled(state, action, "Email verified successfully");
+        state.isAuthenticated = true;
+      })
+      .addCase(verifyEmail.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to verify email");
+      });
 
-    builder.addCase(forgetPassword.pending, (state) => {
-      state.isLoading = true;
-    });
-    builder.addCase(forgetPassword.fulfilled, (state, action: any) => {
-      state.isLoading = false;
-      state.success = true;
-      toast.success<unknown>(
-        typeof action.payload.message === "string"
-          ? action.payload.message
-          : "An error occurred"
+    builder
+      .addCase(isAuthenticatedFun.pending, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(isAuthenticatedFun.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = false;
+      })
+      .addCase(
+        isAuthenticatedFun.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.isLoading = false;
+          state.error = true;
+          state.message = action.payload;
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("users");
+        }
       );
-    });
-    builder.addCase(forgetPassword.rejected, (state, action: any) => {
-      state.isLoading = false;
-      toast.error<unknown>(
-        typeof action.payload.message === "string"
-          ? action.payload.message
-          : "An error occurred"
-      );
-    });
+
+    builder
+      .addCase(forgetPassword.pending, handlePending)
+      .addCase(forgetPassword.fulfilled, (state, action) => {
+        handleFulfilled(state, action, "Password reset email sent");
+      })
+      .addCase(forgetPassword.rejected, (state, action) => {
+        handleRejected(state, action, "Failed to send password reset email");
+      });
   },
 });
 
+export const { resetSuccess } = userApi.actions;
 export default userApi.reducer;

@@ -2,7 +2,8 @@
 
 
 // Defining the structure of the user data
-export const API_USER: string = "http://localhost:9001/api/v1/user";
+
+export const API_USER: string | undefined = import.meta.env.VITE_BACKEND_API_URL;
 
 
 export type signupUserDetails = {

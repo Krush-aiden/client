@@ -9,7 +9,6 @@ function HeroSection() {
 
   return (
     <div className="flex flex-col md:flex-row max-w-7xl mx-auto md:p-18 rounded-lg items-center justify-center m-4 mt-10 md:mt-20 gap-20 h-full">
-      
       {/* Left side with text */}
       <div className="flex flex-col gap-10 w-full md:w-[50%] justify-center">
         <div className="flex flex-col gap-5 text-center md:text-left">
@@ -17,7 +16,8 @@ function HeroSection() {
             Order Food anytime, anywhere
           </h5>
           <p className="text-gray-500">
-            Hey! Our delicious food is waiting for you, and we are always near you.
+            Hey! Our delicious food is waiting for you, and we are always near
+            you.
           </p>
         </div>
         <div className="relative flex items-center gap-2 justify-center md:justify-start">
@@ -29,7 +29,14 @@ function HeroSection() {
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Search for food..."
           />
-          <button onClick={() => navigate(`/Search/${searchText}`)} className="bg-orange hover:bg-hoverOrange text-white px-4 py-2 rounded-md">Search</button>
+          <button
+            onClick={() => {
+              if (searchText) navigate(`/Search/${searchText}`);
+            }}
+            className="bg-orange hover:bg-hoverOrange text-white px-4 py-2 rounded-md"
+          >
+            Search
+          </button>
         </div>
       </div>
 
@@ -39,7 +46,7 @@ function HeroSection() {
           src={pizza_3000285_1280}
           alt="Delicious Pizza"
           className="object-contain sm:h-[400px] md:h-[600px] lg:h-[600px] w-full sm:w-full md:w-auto lg:w-auto"
-          />
+        />
       </div>
     </div>
   );

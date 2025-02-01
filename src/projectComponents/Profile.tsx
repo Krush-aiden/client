@@ -228,7 +228,7 @@ const Profile = () => {
         {loading ? (
           <button
             disabled
-            className="bg-orange hover:bg-HoverOrange flex items-center"
+            className="bg-orange hover:bg-HoverOrange flex items-center justify-center px-6 py-2 rounded-lg"
           >
             <Loader2 className="mr-2 w-4 h-4 animate-spin" />
             Please wait

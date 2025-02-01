@@ -3,7 +3,9 @@ import { z } from "zod";
 // User Signup Schema Validation
 export const userSignupSchema = z.object({
     fullName: z.string().min(1, "Full name is required."),
-    contact: z.string().min(10, "Contact number must be exactly 10 digits."),
+    contact: z.string()
+    .min(10, "Contact number must be exactly 10 digits.")
+    .regex(/^\d+$/, "Contact number must contain only digits."),
     email: z.string().email("The email address provided is invalid."),
     password: z.string().min(6, "Password must contain at least 6 characters."),
 });

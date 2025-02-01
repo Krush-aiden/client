@@ -61,9 +61,9 @@ const Navbar = () => {
   const [profileImgUrl, setProfileImg] = useState(
     "https://github.com/shadcn.png"
   );
+  const { success, users } = useSelector((state: any) => state.user);
 
   const admin = adminParsed[0]?.user?.admin;
-  console.log("🚀 ~ Navbar ~ admin:", admin);
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -95,8 +95,9 @@ const Navbar = () => {
     } else {
       console.log("No data found for users in localStorage.");
     }
+
     setProfileImg(checkAuthUserParsed[0]?.user?.profilePictureName);
-  }, [message]);
+  }, [message, success, users]);
 
   return (
     <div className="text-white fixed bg-white w-full top-0 left-0 z-50 backdrop-filter">
@@ -172,7 +173,7 @@ const Navbar = () => {
               <Avatar>
                 <AvatarImage
                   className="relative left-2 text-xs rounded-full size-10"
-                  src={profileImgUrl}
+                  src={profileImgUrl || "https://github.com/shadcn.png"}
                   alt="@shadcn"
                 />
                 <AvatarFallback>CN</AvatarFallback>
