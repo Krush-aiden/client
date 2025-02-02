@@ -44,12 +44,26 @@ const Login = () => {
     }
   };
 
+  const fetchguestCred = () => {
+    setInput({
+      email: "gianluca.fares@fileexp.com",
+      password: "gianluca.fares@fileexp.com",
+    });
+  };
+
+  const fetchAdminCred = () => {
+    setInput({
+      email: "jentzen.jovon@fileexp.com",
+      password: "jentzen.jovon@fileexp.com",
+    });
+  };
+
   useEffect(() => {
     setLoading(isLoading);
   }, [isLoading]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <form
         onSubmit={loginSubmitHandler}
         className="md:p-8 w-full max-w-md rounded-lg md:border border-gray-200 mx-4"
@@ -106,6 +120,30 @@ const Login = () => {
               Login
             </button>
           )}
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                onClick={fetchAdminCred}
+                id="gAdmin"
+                name="fav_language"
+                value="HTML"
+                className="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-gray-700">Guest Admin Credentials</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                id="gUser"
+                onClick={fetchguestCred}
+                name="fav_language"
+                value="HTML"
+                className="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-gray-700">Guest User Credentials</span>
+            </label>
+          </div>
           <div className="mt-2">
             <NavLink to="/ForgetPassword" className="text-blue-500">
               Forget Password
@@ -120,6 +158,26 @@ const Login = () => {
             Sign Up
           </NavLink>
         </p>
+        <Separator className="w-full h-px bg-gray-300 my-4" />
+        <div>
+          Note:
+          <p>
+            1. Please allow up to 1 minute for login or account creation
+            attempts using dummy credentials. Due to the free-tier limitations
+            on Render
+          </p>
+          <p>
+            2. This project is a <strong>work-in-progress</strong>. The frontend{" "}
+            <strong>UI components</strong> have been fully designed and
+            implemented, providing a polished and interactive user experience.
+            Additionally, <strong>Authentication</strong>,
+            <strong>Authorization</strong>, and{" "}
+            <strong>Profile data management</strong>
+            have been completed on both the frontend and backend sides. However,
+            the backend functionality is still being finalized, with some
+            endpoints and features in development.
+          </p>
+        </div>
       </form>
     </div>
   );
