@@ -3,7 +3,7 @@
 
 // Defining the structure of the user data
 
-export const API_USER: string | undefined = import.meta.env.VITE_BACKEND_USER_API_URL;
+export const API_USER: string | undefined = import.meta.env.VITE_ENVIRONMENT == "prod" ? `${import.meta.env.VITE_BACKEND_USER_API_URL_PROD}/api/v1/user`: `${import.meta.env.VITE_BACKEND_USER_API_URL_DEV}/api/v1/user`;
 
 
 export type signupUserDetails = {
