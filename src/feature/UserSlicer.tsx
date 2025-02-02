@@ -305,7 +305,7 @@ export const userApi = createSlice({
     builder
       .addCase(loginUser.pending, handlePending)
       .addCase(loginUser.fulfilled, (state, action) => {
-        handleFulfilled(state, action, "Login successful");
+        handleFulfilled(state, action, action.payload.message);
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
