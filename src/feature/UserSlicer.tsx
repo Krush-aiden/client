@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 interface SignUpUserPayload {
   signupUserDetails: signupUserDetails;
 }
+axios.defaults.withCredentials = true;
 
 //MARK:signUpUser
 export const signUpUser = createAsyncThunk<
