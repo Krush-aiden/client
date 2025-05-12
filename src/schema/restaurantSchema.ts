@@ -5,7 +5,7 @@ export const restaurantFormSchema = z.object({
     restaurantCity: z.string().min(1, "City name is required"),
     restaurantCountry: z.string().min(1, "Country name is required."),
     restaurantEdt: z.number().min(2,"Delivery time is required"),
-    restaurantCuisines:z.array(z.string()),
+    restaurantCuisines: z.array(z.string()).nonempty("At least one cuisine is required"),
     restaurantImage:z.instanceof(File)
     .refine((file) => file?.size !== 0, { message: "Image file is required" })
     .optional()

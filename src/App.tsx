@@ -36,12 +36,9 @@ const saveToLocalStorage = (isAuthenticated: any, users: any) => {
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("users", JSON.stringify(users));
   }
-
   const isAuthenticatedLoc =
     localStorage.getItem("isAuthenticated") === "true" ? true : false;
-
   const checkAuthUserVal = localStorage.getItem("users");
-
   let checkAuthUserParsed = [];
   if (checkAuthUserVal) {
     try {
@@ -59,17 +56,13 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
     (state) => state.user
   );
-
   const { isAuthenticatedLoc } = saveToLocalStorage(isAuthenticated, users);
-
   if (!isAuthenticatedLoc) {
     return <Navigate to="/login" replace />;
   }
-
   if (!users[0]?.user?.isVerified && !isAuthenticatedLoc) {
     return <Navigate to="/VerifyEmail" replace />;
   }
-
   return children;
 };
 
@@ -77,16 +70,13 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
     (state) => state.user
   );
-
   const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
     isAuthenticated,
     users
   );
-
   if (isAuthenticatedLoc && checkAuthUserParsed[0]?.user?.isVerified) {
     return <Navigate to="/" replace />;
   }
-
   if (
     users.length > 0 &&
     users[0]?.user?.isVerified == false &&
@@ -95,7 +85,6 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
     window.location.reload();
     return <Navigate to="/VerifyEmail" replace />;
   }
-
   return children;
 };
 
@@ -103,13 +92,10 @@ const AdminRout = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
     (state) => state.user
   );
-
   const { checkAuthUserParsed } = saveToLocalStorage(isAuthenticated, users);
-
   if (!checkAuthUserParsed[0]?.user?.admin) {
     return <Navigate to="/" replace />;
   }
-
   return children;
 };
 
@@ -213,10 +199,9 @@ const appRouter = createBrowserRouter([
   {
     path: "/VerifyEmail",
     element: (
-      <AuthenticatedUser>
-        {" "}
-        <VerifyEmail />{" "}
-      </AuthenticatedUser>
+      // <AuthenticatedUser>
+      <VerifyEmail />
+      // </AuthenticatedUser>
     ),
   },
   {
@@ -238,9 +223,14 @@ function App() {
       null
     );
 
+    console.log("🚀 ~ useEffect ~ checkAuthUserParsed:", checkAuthUserParsed);
+    console.log("🚀 ~ useEffect ~ isAuthenticatedLoc:", isAuthenticatedLoc);
+
     if (!checkAuthUserParsed.length && !isAuthenticatedLoc) {
+      console.log("logout");
       dispatch(logout());
     } else {
+      console.log("isAuthenticatedFun");
       dispatch(isAuthenticatedFun());
     }
   }, [isAuthenticatedFun]);

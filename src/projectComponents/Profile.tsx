@@ -1,3 +1,4 @@
+import { updateProfileDetails } from "@/apiTypes/userApi";
 import { AppDispatch } from "@/app/store";
 import { updateProfile } from "@/feature/UserSlicer";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
@@ -10,7 +11,7 @@ const Profile = () => {
   //   const [selectedProfilePic, setProfilePic] = useState<string>("");
   //   const [username, setUsername] = useState<string>("");
 
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<updateProfileDetails>({
     fullName: "",
     email: "",
     address: "",
@@ -18,6 +19,7 @@ const Profile = () => {
     country: "",
     profilePictureName: {},
   });
+
   const [loading, setLoading] = useState(false);
   const profileDataChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,10 +49,10 @@ const Profile = () => {
   const updateProfileHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Todo Update Profile Data update API Implementation
-    const payload = { updateProfileDetails: profileData };
+    // const payload = { updateProfileDetails: profileData };
 
     try {
-      dispatch(updateProfile(payload)).unwrap();
+      dispatch(updateProfile(profileData)).unwrap();
     } catch (error) {
       console.log(error);
     }
@@ -85,6 +87,9 @@ const Profile = () => {
       profilePictureName: checkAuthUserParsed[0]?.user?.profilePictureName,
     });
     setprofileUrl(checkAuthUserParsed[0]?.user?.profilePictureName);
+  }, []);
+
+  useEffect(() => {
     setLoading(isLoading);
   }, [isLoading]);
 

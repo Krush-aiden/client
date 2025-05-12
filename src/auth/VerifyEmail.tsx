@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const VerifyEmail = () => {
   const inputRef = useRef<(HTMLInputElement | null)[]>([]);
+  // console.log("🚀 ~ VerifyEmail ~ inputRef:", inputRef);
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
 

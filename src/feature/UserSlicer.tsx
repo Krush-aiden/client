@@ -179,15 +179,15 @@ export const resetPassword = createAsyncThunk<
   }
 });
 
-interface updateProfileDetailsPayload {
-  updateProfileDetails: updateProfileDetails;
-}
+// interface updateProfileDetailsPayload {
+//   updateProfileDetails: updateProfileDetails;
+// }
 
 //MARK:updateProfile
 export const updateProfile = createAsyncThunk<
   updateProfileDetailsRes,
-  updateProfileDetailsPayload
->("updateProfile", async ({ updateProfileDetails }, { rejectWithValue }) => {
+  updateProfileDetails
+>("updateProfile", async (updateProfileDetails, { rejectWithValue }) => {
   try {
     const formData = new FormData();
     for (const key in updateProfileDetails) {
@@ -245,9 +245,11 @@ const handleFulfilled = (
   state.isLoading = false;
   state.success = true;
   state.error = false;
+  state.message = action.payload.message;
   if (action.payload) {
     state.users = [action.payload];
     if (successMessage) {
+      console.log("fullfilled");
       toast.success(successMessage);
     }
   }
@@ -262,6 +264,7 @@ const handleRejected = (
   state.error = true;
   state.message = action.payload;
   if (errorMessage) {
+    console.log("reject");
     toast.error(errorMessage);
   }
 };
@@ -321,8 +324,6 @@ export const userApi = createSlice({
         state.isLoading = false;
         state.error = false;
         state.message = action.payload.message;
-        localStorage.removeItem("isAuthenticated");
-        localStorage.removeItem("users");
       })
       .addCase(logout.rejected, (state, action) => {
         handleRejected(state, action, "Failed to logout");

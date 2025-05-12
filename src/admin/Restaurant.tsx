@@ -1,29 +1,58 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { restaurantFormSchema } from "@/schema/restaurantSchema";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/app/store";
+import {
+  restaurantUpdate,
+  RestaurantUpdateDetails,
+} from "@/feature/adminSlicer";
+import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 
 const Restaurant = () => {
   const loading = false;
   const restaurantPresent = false;
+  const imageRef = useRef<HTMLInputElement | null>(null);
 
-  const [input, setInput] = useState<restaurantFormSchema>({
+  const [input, setInput] = useState<RestaurantUpdateDetails>({
     restaurantName: "",
     restaurantCity: "",
     restaurantCountry: "",
     restaurantEdt: 0,
     restaurantCuisines: [],
-    restaurantImage: undefined,
+    restaurantImage: {},
   });
 
+  const dispatch = useDispatch<AppDispatch>();
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setInput({ ...input, [name]: type === "number" ? Number(value) : value });
   };
 
   const [errors, setErrors] = useState<Partial<restaurantFormSchema>>({});
+
+  const [profileUrl, setprofileUrl] = useState("");
+  // console.log("🚀 ~ Restaurant ~ profileUrl:", profileUrl);
+
+  const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setInput((previous) => ({
+          ...previous,
+          restaurantImage: file, // Store the data URL
+        }));
+        setprofileUrl(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmitFormHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,6 +61,7 @@ const Restaurant = () => {
     console.log("🚀 ~ onSubmitFormHandler ~ result:", result);
     if (!result.success) {
       const fieldErrors = result.error.formErrors.fieldErrors;
+      console.log("🚀 ~ onSubmitFormHandler ~ fieldErrors:", fieldErrors);
       setErrors(fieldErrors as Partial<restaurantFormSchema>);
       console.log("🚀 ~ Restaurant ~ errors:", errors);
       return;
@@ -41,13 +71,18 @@ const Restaurant = () => {
         restaurantCity: "",
         restaurantCountry: "",
         restaurantEdt: undefined,
-        restaurantCuisines: undefined,
-        restaurantImage: undefined,
-      })
+        restaurantCuisines: [],
+      });
     }
 
     //Todo Api Implementation starts here
     console.log(input);
+
+    try {
+      dispatch(restaurantUpdate(input)).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -160,15 +195,10 @@ const Restaurant = () => {
               </Label>
               <input
                 type="file"
-                name="restaurantImage"
+                name="restaurantbanner"
+                ref={imageRef}
                 accept="image/*"
-                // value = {input.restaurantImage?.name[0]}
-                onChange={(e) =>
-                  setInput({
-                    ...input,
-                    restaurantImage: e.target.files?.[0] || undefined,
-                  })
-                }
+                onChange={fileChangeHandler}
                 className="bg-white mt-2 w-full text-gray-700 border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
               {errors && (
@@ -192,6 +222,19 @@ const Restaurant = () => {
                   : "Add Your Restaurant"}
               </Button>
             )}
+
+            <div>
+              <Avatar>
+                <AvatarImage
+                  className="relative text-xs rounded w-50 h-24 object-cover"
+                  src={
+                    profileUrl ||
+                    "https://img.freepik.com/free-psd/food-menu-restaurant-web-banner-template_106176-812.jpg?t=st=1744647131~exp=1744650731~hmac=1b45f7a0d053a8a74531d186d02d98a9980d57f8778e73d830c3e84b96b87579&w=900"
+                  } // Default or selected profile image
+                  alt="Rectangle Banner"
+                />
+              </Avatar>
+            </div>
           </div>
         </form>
       </div>

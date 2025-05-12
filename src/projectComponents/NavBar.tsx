@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,13 +41,12 @@ import { Separator } from "@/components/ui/separator";
 import { logout } from "@/feature/UserSlicer";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const loading = false;
   const adminVal = localStorage.getItem("users");
   // console.log("🚀 ~ useEffect ~ admin:", admin);
-
   let adminParsed = [];
   if (adminVal) {
     try {
@@ -62,29 +61,12 @@ const Navbar = () => {
     "https://github.com/shadcn.png"
   );
   const { success, users } = useSelector((state: any) => state.user);
-
   const admin = adminParsed[0]?.user?.admin;
-
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
-
-  const onClickLogout = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      dispatch(logout()).unwrap();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-  const { message }: any = useSelector<any>((state) => state.user);
+  const { message } = useSelector((state: any) => state.user);
 
   useEffect(() => {
-    if (message == "Logged out successfully.") {
-      window.location.reload();
-    }
     const checkAuthUserVal = localStorage.getItem("users");
-
     let checkAuthUserParsed = [];
     if (checkAuthUserVal) {
       try {
@@ -95,7 +77,11 @@ const Navbar = () => {
     } else {
       console.log("No data found for users in localStorage.");
     }
-
+    if (message == "Logged out successfully.") {
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("users");
+      window.location.reload();
+    }
     setProfileImg(checkAuthUserParsed[0]?.user?.profilePictureName);
   }, [message, success, users]);
 
@@ -191,7 +177,7 @@ const Navbar = () => {
               ) : (
                 <button
                   type="submit"
-                  onClick={onClickLogout}
+                  onClick={() => dispatch(logout())}
                   className="w-full bg-orange hover:bg-hoverOrange py-3 px-4 rounded-lg"
                 >
                   Logout
@@ -226,7 +212,6 @@ const MobileNavbar = () => {
   }
 
   const admin = adminParsed[0]?.user?.admin;
-
   const dispatch = useDispatch<AppDispatch>();
 
   return (
