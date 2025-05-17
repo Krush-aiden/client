@@ -56,7 +56,6 @@ const Restaurant = () => {
 
   const onSubmitFormHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const result = restaurantFormSchema.safeParse(input);
     console.log("🚀 ~ onSubmitFormHandler ~ result:", result);
     if (!result.success) {
@@ -71,7 +70,7 @@ const Restaurant = () => {
         restaurantCity: "",
         restaurantCountry: "",
         restaurantEdt: undefined,
-        restaurantCuisines: [],
+        restaurantCuisines: [""],
       });
     }
 
@@ -203,7 +202,7 @@ const Restaurant = () => {
               />
               {errors && (
                 <span className="text-sm text-red-600 font-medium">
-                  {errors.restaurantImage?.name}
+                  {errors.restaurantImage}
                 </span>
               )}
             </div>
