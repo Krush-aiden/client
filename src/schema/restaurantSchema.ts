@@ -4,7 +4,7 @@ export const restaurantFormSchema = z.object({
     restaurantName: z.string().min(1, "Restaurant name is required."),
     restaurantCity: z.string().min(1, "City name is required"),
     restaurantCountry: z.string().min(1, "Country name is required."),
-    restaurantEdt: z.number().min(2,"Delivery time is required"),
+    restaurantEdt: z.number().min(2,"Delivery time must be at least 2 minutes."),
     restaurantCuisines: z.array(z.string()).min(2,"At least two cuisine is required"),
     restaurantImage: z
   .any()

@@ -249,7 +249,7 @@ const handleFulfilled = (
   if (action.payload) {
     state.users = [action.payload];
     if (successMessage) {
-      console.log("fullfilled");
+      console.log("fulfilled");
       toast.success(successMessage);
     }
   }

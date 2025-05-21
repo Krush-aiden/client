@@ -26,7 +26,7 @@ const Profile = () => {
     setProfileData({ ...profileData, [name]: value });
   };
   const dispatch = useDispatch<AppDispatch>();
-  const [profileUrl, setprofileUrl] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
   const { isLoading }: any = useSelector((state: any) => state.user);
 
   const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +40,7 @@ const Profile = () => {
           ...previous,
           profilePictureName: file, // Store the data URL
         }));
-        setprofileUrl(result);
+        setProfileUrl(result);
       };
       reader.readAsDataURL(file);
     }
@@ -86,7 +86,7 @@ const Profile = () => {
         : checkAuthUserParsed[0]?.user.country,
       profilePictureName: checkAuthUserParsed[0]?.user?.profilePictureName,
     });
-    setprofileUrl(checkAuthUserParsed[0]?.user?.profilePictureName);
+    setProfileUrl(checkAuthUserParsed[0]?.user?.profilePictureName);
   }, []);
 
   useEffect(() => {

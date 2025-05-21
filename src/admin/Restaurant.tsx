@@ -1,23 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { restaurantFormSchema } from "@/schema/restaurantSchema";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
 import {
+  fetchRestaurantFunction,
   restaurantUpdate,
-  RestaurantUpdateDetails,
+  restaurantEdit,
+  RestaurantUpdateAndEditDetails,
 } from "@/feature/adminSlicer";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 
 const Restaurant = () => {
   const loading = false;
-  const restaurantPresent = false;
+  const [restaurantPresent, setRestaurantPresent] = useState(false);
   const imageRef = useRef<HTMLInputElement | null>(null);
 
-  const [input, setInput] = useState<RestaurantUpdateDetails>({
+  const [input, setInput] = useState<RestaurantUpdateAndEditDetails>({
     restaurantName: "",
     restaurantCity: "",
     restaurantCountry: "",
@@ -34,7 +36,7 @@ const Restaurant = () => {
 
   const [errors, setErrors] = useState<Partial<restaurantFormSchema>>({});
 
-  const [profileUrl, setprofileUrl] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
   // console.log("🚀 ~ Restaurant ~ profileUrl:", profileUrl);
 
   const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +50,7 @@ const Restaurant = () => {
           ...previous,
           restaurantImage: file, // Store the data URL
         }));
-        setprofileUrl(result);
+        setProfileUrl(result);
       };
       reader.readAsDataURL(file);
     }
@@ -78,11 +80,39 @@ const Restaurant = () => {
     console.log(input);
 
     try {
-      dispatch(restaurantUpdate(input)).unwrap();
+      if (restaurantPresent) {
+        dispatch(restaurantEdit(input)).unwrap();
+      } else {
+        dispatch(restaurantUpdate(input)).unwrap();
+      }
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    dispatch(fetchRestaurantFunction()).unwrap();
+  }, []);
+
+  const { restaurantDetails }: any = useSelector((state: any) => state.admin);
+
+  useEffect(() => {
+    console.log(
+      "🚀 ~ getRestaurantDetails ~ restaurantDetails:",
+      restaurantDetails
+    );
+    if (restaurantDetails?.[0]?.success) {
+      setInput({
+        restaurantName: restaurantDetails[0].restaurant[0].restaurantName,
+        restaurantCity: restaurantDetails[0].restaurant[0].city,
+        restaurantCountry: restaurantDetails[0].restaurant[0].country,
+        restaurantEdt: restaurantDetails[0].restaurant[0].deliveryTime,
+        restaurantCuisines: restaurantDetails[0].restaurant[0].cuisines,
+      });
+      setProfileUrl(restaurantDetails[0].restaurant[0].imageUrl);
+      setRestaurantPresent(restaurantDetails?.[0]?.success);
+    }
+  }, [restaurantDetails]);
 
   return (
     <div className="max-w-6xl mx-auto my-10 px-6">
@@ -194,7 +224,7 @@ const Restaurant = () => {
               </Label>
               <input
                 type="file"
-                name="restaurantbanner"
+                name="restaurantBanner"
                 ref={imageRef}
                 accept="image/*"
                 onChange={fileChangeHandler}
