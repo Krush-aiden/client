@@ -25,6 +25,21 @@ interface RestaurantUpdateAndEditResponse {
   restaurant: any;
 }
 
+// Define TypeScript interfaces for restaurant update
+export interface MenuAddAndEditDetails {
+  restaurantName: string;
+  restaurantCity: string;
+  restaurantCountry: string;
+  restaurantEdt?: any;
+  restaurantCuisines?: string[];
+  restaurantImage?: any;
+}
+
+interface MenuAddAndEditResponse {
+  message: string;
+  restaurant: any;
+}
+
 interface AdminState {
   restaurantDetails: unknown[];
   isLoading: boolean;
@@ -41,9 +56,47 @@ const initialState: AdminState = {
   success: false,
 };
 
+//MARK:Menu Add
+export const addMenu = createAsyncThunk<
+  MenuAddAndEditResponse,
+  MenuAddAndEditDetails
+>("admin/addMenu", async (MenuAddAndEditDetails, { rejectWithValue }) => {
+  try {
+    console.log("🚀 ~ restaurantUpdateDetails:", MenuAddAndEditDetails);
+    const formData = new FormData();
+    for (const key in MenuAddAndEditDetails) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (MenuAddAndEditDetails.hasOwnProperty(key)) {
+        formData.append(
+          key,
+          MenuAddAndEditDetails[key as keyof MenuAddAndEditDetails] as any
+        );
+      }
+    }
+    const response = await axios.post(
+      `${API_ADMIN}/restaurant/update`,
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating restaurant:", error);
+    const errorMsg =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to update restaurant";
+    return rejectWithValue(errorMsg);
+  }
+});
+
 //MARK: Fetch Restaurant
 export const fetchRestaurantFunction = createAsyncThunk(
-  "fetchRestaurantFunction",
+  "admin/fetchRestaurantFunction",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_ADMIN}/`, {
@@ -148,7 +201,7 @@ export const restaurantEdit = createAsyncThunk<
   }
 );
 
-//MARK: Restaurant Api
+//MARK: Restaurant & Menu Api
 const adminSlicer = createSlice({
   name: "admin",
   initialState,

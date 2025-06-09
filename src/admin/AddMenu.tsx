@@ -25,74 +25,75 @@ function AddMenu() {
     image: undefined,
   });
 
-  const changeEveenthandler = (e:React.ChangeEvent<HTMLInputElement>) =>{
-    const {name,value,type} = e.target;
-    console.log("🚀 ~ changeEveenthandler ~ name:", name);
-    setInput({...input, [name]:type === "number" ? Number(value):value})
-  }
+  const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    console.log("🚀 ~ changeEventHandler ~ name:", name);
+    setInput({ ...input, [name]: type === "number" ? Number(value) : value });
+  };
 
   const [selectedMenu, setSelectedMenu] = useState<MenuFormSchema>({
     name: "",
     description: "",
     price: 0,
-    image:  undefined
+    image: undefined,
   });
+
   // const loading = false;
   const menus = [
     {
-      name:"pizza",
-    description:"lorem asjdkas asjdasdj",
-    price:80,
-    image:"https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk="
+      name: "pizza",
+      description: "lorem asjdkas asjdasdj",
+      price: 80,
+      image:
+        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
     },
     {
-      name:"momos",
-      description:"lorem asjdkas asjdasdj",
-      price:80,
-      image:"https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk="
+      name: "momos",
+      description: "lorem asjdkas asjdasdj",
+      price: 80,
+      image:
+        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
     },
     {
-      name:"burger",
-      description:"lorem asjdkas asjdasdj",
-      price:80,
-      image:"https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk="
+      name: "burger",
+      description: "lorem asjdkas asjdasdj",
+      price: 80,
+      image:
+        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
     },
     {
-      name:"crispy paneer",
-      description:"lorem asjdkas asjdasdj",
-      price:80,
-      image:"https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk="
-    }
-    
-  ]
+      name: "crispy paneer",
+      description: "lorem asjdkas asjdasdj",
+      price: 80,
+      image:
+        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
+    },
+  ];
 
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
-  
-const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
-  e.preventDefault();
-  const result = menuSchema.safeParse(input);
-  console.log("🚀 ~ submitHandler ~ result:", result);
-  console.log("🚀 ~ AddMenu ~ input:", input);
-  console.log("🚀 ~ AddMenu ~ error:", error);
 
-  if(!result.success){
-    const fieldError = result.error.formErrors.fieldErrors;
-    console.log("🚀 ~ submitHandler ~ fieldError:", fieldError);
-    setError(fieldError as Partial<MenuFormSchema>);
-    return;
-  } else {
-    setError(
-      {
+  const submitHandler = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const result = menuSchema.safeParse(input);
+    console.log("🚀 ~ submitHandler ~ result:", result);
+    console.log("🚀 ~ AddMenu ~ input:", input);
+    console.log("🚀 ~ AddMenu ~ error:", error);
+
+    if (!result.success) {
+      const fieldError = result.error.formErrors.fieldErrors;
+      console.log("🚀 ~ submitHandler ~ fieldError:", fieldError);
+      setError(fieldError as Partial<MenuFormSchema>);
+      return;
+    } else {
+      setError({
         name: "",
         description: "",
         price: undefined,
-        image:  undefined
-      }
-    )
-  }
-  //Todo api implementation starts here
-}
-
+        image: undefined,
+      });
+    }
+    //Todo api implementation starts here
+  };
 
   return (
     <div className="max-w-6xl mx-auto my-10">
@@ -126,11 +127,15 @@ const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
                 <Input
                   type="text"
                   name="name"
-                  onChange={changeEveenthandler}
+                  onChange={changeEventHandler}
                   placeholder="Enter menu name"
                   className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && <span className="text-xs font-extrabold text-red-600">{error.name}</span>}
+                {error && (
+                  <span className="text-xs font-extrabold text-red-600">
+                    {error.name}
+                  </span>
+                )}
               </div>
 
               {/* Description Field */}
@@ -141,11 +146,15 @@ const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
                 <Input
                   type="text"
                   name="description"
-                  onChange={changeEveenthandler}
+                  onChange={changeEventHandler}
                   placeholder="Enter menu description"
                   className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && <span className="text-xs font-extrabold text-red-600">{error.description}</span>}
+                {error && (
+                  <span className="text-xs font-extrabold text-red-600">
+                    {error.description}
+                  </span>
+                )}
               </div>
 
               {/* Price Field */}
@@ -156,11 +165,15 @@ const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
                 <Input
                   type="number"
                   name="price"
-                  onChange={changeEveenthandler}
+                  onChange={changeEventHandler}
                   placeholder="Enter menu price"
                   className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && <span className="text-xs font-extrabold text-red-600">{error.price}</span>}
+                {error && (
+                  <span className="text-xs font-extrabold text-red-600">
+                    {error.price}
+                  </span>
+                )}
               </div>
 
               {/* Image Upload Field */}
@@ -171,14 +184,19 @@ const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
                 <input
                   type="file"
                   name="image"
-                  onChange={(e) => setInput({
-                    ...input,
-                    image: e.target.files?.[0] || undefined,
-                  })
-                }
+                  onChange={(e) =>
+                    setInput({
+                      ...input,
+                      image: e.target.files?.[0] || undefined,
+                    })
+                  }
                   className="bg-white mt-2 w-full text-gray-700 border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && <span className="text-xs font-extrabold text-red-600">{error.image}</span>}
+                {error && (
+                  <span className="text-xs font-extrabold text-red-600">
+                    {error.image}
+                  </span>
+                )}
               </div>
 
               {/* Submit Button */}
@@ -193,35 +211,48 @@ const submitHandler = (e:FormEvent<HTMLFormElement>) =>{
       </div>
       {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        menus.map((menu:any, idx:number) => {
+        menus.map((menu: any, idx: number) => {
           return (
             <div key={idx} className="mt-6 space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
-              <img
-                src={menu.image}
-                alt="res_Image"
-                className="md:h-24 md:w-24 object-cover w-full h-full rounded-lg shadow-lg"
-              />
-              <div className="flex-1 text-left">
-                <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1>
-                <p className="text-sm text-gray-600 mt-1"> Lorem ipsum dolor sit amet consectetur, adipisicing elit.</p>
-                <h2 className="text-md font-semibold mt-2">
-                  Price: <span className="text-[#D19254]">₹80</span>
-                </h2>
+              <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
+                <img
+                  src={menu.image}
+                  alt="res_Image"
+                  className="md:h-24 md:w-24 object-cover w-full h-full rounded-lg shadow-lg"
+                />
+                <div className="flex-1 text-left">
+                  <h1 className="text-lg font-semibold text-gray-800">
+                    {menu.name}
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {" "}
+                    Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                  </p>
+                  <h2 className="text-md font-semibold mt-2">
+                    Price: <span className="text-[#D19254]">₹80</span>
+                  </h2>
+                </div>
+                <Button
+                  onClick={() => {
+                    console.log("🚀 ~ menus.map ~ menu:", menu);
+                    setSelectedMenu(menu);
+                    setEditOpen(true);
+                  }}
+                  className="bg-orange hover:bg-hoverOrange mt-2"
+                  size={"sm"}
+                >
+                  Edit
+                </Button>
               </div>
-              <Button 
-              onClick={() => {
-                console.log("🚀 ~ menus.map ~ menu:", menu);
-                setSelectedMenu(menu);
-                setEditOpen(true);
-              }}
-              className="bg-orange hover:bg-hoverOrange mt-2" size={'sm'}>Edit</Button>
             </div>
-          </div>
           );
         })
       }
-      <EditMenu selectedMenu ={selectedMenu} editOpen = {editOpen} setEditOpen={setEditOpen} />
+      <EditMenu
+        selectedMenu={selectedMenu}
+        editOpen={editOpen}
+        setEditOpen={setEditOpen}
+      />
     </div>
   );
 }
