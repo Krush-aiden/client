@@ -1,7 +1,14 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { LoginInputState, userLoginSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
@@ -28,6 +35,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<Partial<LoginInputState>>({});
   const [errorState, setErrorState] = useState<boolean>();
+  const [googleAuthError, setGoogleAuthError] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading }: any = useSelector<any>((state) => state.user);
 
@@ -51,21 +59,18 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSuccess = (response: any) => {
-    const { credential } = response;
-    const payload = { googleToken: credential };
-    try {
-      dispatch(googleLogin(payload)).unwrap();
-    } catch (error) {
-      console.error("Google login failed:", error);
-    }
-  };
-
-  // const handleGoogleError = () => {
-  //   console.log("Google login failed");
-  //   setErrorMsg({ email: "Google login failed. Please try again." });
-  //   setErrorState(false);
-  // };
+  const handleGoogleSuccess = useCallback(
+    (response: any) => {
+      const { credential } = response;
+      const payload = { googleToken: credential };
+      try {
+        dispatch(googleLogin(payload)).unwrap();
+      } catch (error) {
+        console.error("Google login failed:", error);
+      }
+    },
+    [dispatch],
+  );
 
   const googleInitialized = useRef(false);
   useEffect(() => {
@@ -73,6 +78,9 @@ const Login = () => {
 
     if (!clientId) {
       console.error("Google Client ID missing");
+      setGoogleAuthError(
+        "Google sign-in is unavailable right now. Please use email login.",
+      );
       return;
     }
 
@@ -89,6 +97,11 @@ const Login = () => {
       script.id = "google-script";
 
       script.onload = initializeGoogle;
+      script.onerror = () => {
+        setGoogleAuthError(
+          "Unable to load Google sign-in script. Check browser privacy/ad-block settings.",
+        );
+      };
       document.body.appendChild(script);
     };
 
@@ -103,6 +116,7 @@ const Login = () => {
       const container = document.getElementById("googleSignInButton");
       if (container) {
         container.innerHTML = "";
+        setGoogleAuthError("");
         window.google.accounts.id.renderButton(container, {
           theme: "outline",
           size: "large",
@@ -115,7 +129,7 @@ const Login = () => {
     };
 
     loadGoogleScript();
-  }, []);
+  }, [handleGoogleSuccess]);
 
   useEffect(() => {
     setLoading(isLoading);
@@ -137,20 +151,47 @@ const Login = () => {
   const [showInfo, setShowInfo] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="w-full max-w-md mx-4 mb-3 flex justify-end">
+        <NavLink
+          to="/"
+          className="flex items-center gap-1 text-sm text-gray-600 hover:text-orange-500 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v6a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-6h1a1 1 0 00.707-1.707l-7-7z" />
+          </svg>
+          Home
+        </NavLink>
+      </div>
       <form
         onSubmit={loginSubmitHandler}
         className="md:p-8 w-full max-w-md rounded-lg md:border border-gray-200 mx-4"
       >
         <div className="mb-4">
-          <h3 className="font-bold text-2xl">FoodSy</h3>
+          <NavLink
+            to="/"
+            className="font-bold text-2xl hover:text-orange-500 transition-colors"
+          >
+            FoodSy
+          </NavLink>
         </div>
 
         {/* Google Sign-In Button */}
         <div className="mb-6">
-          <div
-            id="googleSignInButton"
-            className="flex justify-center w-full"
-          ></div>
+          {googleAuthError ? (
+            <div className="w-full rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              {googleAuthError}
+            </div>
+          ) : (
+            <div
+              id="googleSignInButton"
+              className="flex justify-center w-full"
+            ></div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 mb-6">
