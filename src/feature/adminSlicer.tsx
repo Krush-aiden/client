@@ -3,12 +3,17 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Define API endpoint and types
-// const API_ADMIN = "/api/admin";
+// const API_ADMIN_RESTAURANT_ROUT_URL = "/api/admin";
 
-const API_ADMIN: string | undefined =
+const API_ADMIN_RESTAURANT_ROUT_URL: string | undefined =
   import.meta.env.VITE_ENVIRONMENT == "prod"
     ? `${import.meta.env.VITE_BACKEND_USER_API_URL_PROD}/api/v1/restaurantRout`
     : `${import.meta.env.VITE_BACKEND_USER_API_URL_DEV}/api/v1/restaurantRout`;
+
+const API_ADMIN_MENU_ROUT_URL: string | undefined =
+  import.meta.env.VITE_ENVIRONMENT == "prod"
+    ? `${import.meta.env.VITE_BACKEND_USER_API_URL_PROD}/api/v1/menuRout`
+    : `${import.meta.env.VITE_BACKEND_USER_API_URL_DEV}/api/v1/menuRout`;
 
 // Define TypeScript interfaces for restaurant update
 export interface RestaurantUpdateAndEditDetails {
@@ -27,16 +32,14 @@ interface RestaurantUpdateAndEditResponse {
 
 // Define TypeScript interfaces for restaurant update
 export interface MenuAddAndEditDetails {
-  restaurantName: string;
-  restaurantCity: string;
-  restaurantCountry: string;
-  restaurantEdt?: any;
-  restaurantCuisines?: string[];
-  restaurantImage?: any;
+  name: string;
+  description: string;
+  price: number;
+  image?: any;
 }
 
 interface MenuAddAndEditResponse {
-  message: string;
+  message: any;
   restaurant: any;
 }
 
@@ -56,52 +59,15 @@ const initialState: AdminState = {
   success: false,
 };
 
-//MARK:Menu Add
-export const addMenu = createAsyncThunk<
-  MenuAddAndEditResponse,
-  MenuAddAndEditDetails
->("admin/addMenu", async (MenuAddAndEditDetails, { rejectWithValue }) => {
-  try {
-    console.log("🚀 ~ restaurantUpdateDetails:", MenuAddAndEditDetails);
-    const formData = new FormData();
-    for (const key in MenuAddAndEditDetails) {
-      // eslint-disable-next-line no-prototype-builtins
-      if (MenuAddAndEditDetails.hasOwnProperty(key)) {
-        formData.append(
-          key,
-          MenuAddAndEditDetails[key as keyof MenuAddAndEditDetails] as any
-        );
-      }
-    }
-    const response = await axios.post(
-      `${API_ADMIN}/restaurant/update`,
-      formData,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    return response.data;
-  } catch (error: any) {
-    console.error("Error updating restaurant:", error);
-    const errorMsg =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to update restaurant";
-    return rejectWithValue(errorMsg);
-  }
-});
-
 //MARK: Fetch Restaurant
 export const fetchRestaurantFunction = createAsyncThunk(
   "admin/fetchRestaurantFunction",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_ADMIN}/`, {
+      const response = await axios.get(`${API_ADMIN_RESTAURANT_ROUT_URL}/`, {
         withCredentials: true, // Include credentials (cookies)
       });
+      console.log("response",response);
       return response.data;
     } catch (error: any) {
       console.error(
@@ -137,7 +103,7 @@ export const restaurantUpdate = createAsyncThunk<
         }
       }
       const response = await axios.post(
-        `${API_ADMIN}/restaurant/update`,
+        `${API_ADMIN_RESTAURANT_ROUT_URL}/restaurant/update`,
         formData,
         {
           withCredentials: true,
@@ -180,7 +146,7 @@ export const restaurantEdit = createAsyncThunk<
         }
       }
       const response = await axios.put(
-        `${API_ADMIN}/restaurant/edit`,
+        `${API_ADMIN_RESTAURANT_ROUT_URL}/restaurant/edit`,
         formData,
         {
           withCredentials: true,
@@ -200,6 +166,44 @@ export const restaurantEdit = createAsyncThunk<
     }
   }
 );
+
+//MARK:Menu Add
+export const addMenu = createAsyncThunk<
+  MenuAddAndEditResponse,
+  MenuAddAndEditDetails
+>("admin/addMenu", async (MenuAddAndEditPayload, { rejectWithValue }) => {
+  try {
+    console.log("🚀 ~ restaurantUpdateDetails:", MenuAddAndEditPayload);
+    const formData = new FormData();
+    for (const key in MenuAddAndEditPayload) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (MenuAddAndEditPayload.hasOwnProperty(key)) {
+        formData.append(
+          key,
+          MenuAddAndEditPayload[key as keyof MenuAddAndEditDetails] as any
+        );
+      }
+    }
+    const response = await axios.post(
+      `${API_ADMIN_MENU_ROUT_URL}/addMenu`,
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating restaurant:", error);
+    const errorMsg =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to update restaurant";
+    return rejectWithValue(errorMsg);
+  }
+});
 
 //MARK: Restaurant & Menu Api
 const adminSlicer = createSlice({
@@ -277,6 +281,24 @@ const adminSlicer = createSlice({
           state.message = action.payload;
         }
       );
+    builder
+      .addCase(addMenu.pending, (state) => {
+        state.isLoading = true;
+        state.error = false;
+      })
+      .addCase(addMenu.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.success = true;
+        state.error = false;
+        state.message = action.payload.message;
+        toast.success("Menu added successfully");
+      })
+      .addCase(addMenu.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.error = true;
+        state.message = action.payload;
+        toast.error("Failed to update restaurant");
+      });
   },
 });
 

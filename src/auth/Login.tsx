@@ -1,11 +1,18 @@
 import { Separator } from "@radix-ui/react-separator";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { LoginInputState, userLoginSchema } from "@/schema/userSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { loginUser } from "@/feature/UserSlicer";
+import { loginUser, googleLogin } from "@/feature/UserSlicer";
+import { ChevronDown } from "lucide-react";
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 const Login = () => {
   const [Input, setInput] = useState<LoginInputState>({
@@ -40,9 +47,80 @@ const Login = () => {
     try {
       dispatch(loginUser(payload)).unwrap();
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Login failed:", error);
     }
   };
+
+  const handleGoogleSuccess = (response: any) => {
+    const { credential } = response;
+    const payload = { googleToken: credential };
+    try {
+      dispatch(googleLogin(payload)).unwrap();
+    } catch (error) {
+      console.error("Google login failed:", error);
+    }
+  };
+
+  // const handleGoogleError = () => {
+  //   console.log("Google login failed");
+  //   setErrorMsg({ email: "Google login failed. Please try again." });
+  //   setErrorState(false);
+  // };
+
+  const googleInitialized = useRef(false);
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+    if (!clientId) {
+      console.error("Google Client ID missing");
+      return;
+    }
+
+    const loadGoogleScript = () => {
+      if (document.getElementById("google-script")) {
+        initializeGoogle();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.id = "google-script";
+
+      script.onload = initializeGoogle;
+      document.body.appendChild(script);
+    };
+
+    const initializeGoogle = () => {
+      if (!window.google || googleInitialized.current) return;
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleSuccess,
+      });
+
+      const googleButton = document.getElementById("googleSignInButton");
+
+      if (googleButton) {
+        googleButton.innerHTML = ""; // clear previous render
+
+        window.google.accounts.id.renderButton(googleButton, {
+          theme: "outline",
+          size: "large",
+          width: 300, // ✅ FIXED
+        });
+      }
+
+      googleInitialized.current = true;
+    };
+
+    loadGoogleScript();
+  }, []);
+
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
 
   const fetchguestCred = () => {
     setInput({
@@ -57,11 +135,7 @@ const Login = () => {
       password: "jentzen.jovon@fileexp.com",
     });
   };
-
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading]);
-
+  const [showInfo, setShowInfo] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <form
@@ -71,6 +145,18 @@ const Login = () => {
         <div className="mb-4">
           <h3 className="font-bold text-2xl">FoodSy</h3>
         </div>
+
+        {/* Google Sign-In Button */}
+        <div className="mb-6">
+          <div id="googleSignInButton" className="flex justify-center"></div>
+        </div>
+
+        <div className="flex items-center gap-4 my-6">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="text-gray-500 text-sm">Or continue with email</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
         <div className="mb-6">
           <div className="relative">
             <input
@@ -120,7 +206,7 @@ const Login = () => {
               Login
             </button>
           )}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-4">
             <label className="flex items-center space-x-2">
               <input
                 type="radio"
@@ -159,24 +245,39 @@ const Login = () => {
           </NavLink>
         </p>
         <Separator className="w-full h-px bg-gray-300 my-4" />
-        <div>
-          Note:
-          <p>
-            1. Please allow up to 1 minute for login or account creation
-            attempts using dummy credentials. Due to the free-tier limitations
-            on Render
-          </p>
-          <p>
-            2. This project is a <strong>work-in-progress</strong>. The frontend{" "}
-            <strong>UI components</strong> have been fully designed and
-            implemented, providing a polished and interactive user experience.
-            Additionally, <strong>Authentication</strong>,
-            <strong>Authorization</strong>, and{" "}
-            <strong>Profile data management</strong>
-            have been completed on both the frontend and backend sides. However,
-            the backend functionality is still being finalized, with some
-            endpoints and features in development.
-          </p>
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => setShowInfo((prev) => !prev)}
+            className="flex items-center gap-2 text-sm text-gray-700 font-medium"
+          >
+            Note
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-200 ${showInfo ? "rotate-180" : ""
+                }`}
+            />
+          </button>
+
+          {showInfo && (
+            <div className="mt-2 text-sm text-gray-600 space-y-2">
+              <p>
+                1. Please allow up to 1 minute for login or account creation
+                attempts using dummy credentials. Due to the free-tier limitations
+                on Render
+              </p>
+              <p>
+                2. This project is a <strong>work-in-progress</strong>. The frontend{" "}
+                <strong>UI components</strong> have been fully designed and
+                implemented, providing a polished and interactive user experience.
+                Additionally, <strong>Authentication</strong>,
+                <strong>Authorization</strong>, and{" "}
+                <strong>Profile data management</strong>
+                have been completed on both the frontend and backend sides. However,
+                the backend functionality is still being finalized, with some
+                endpoints and features in development.
+              </p>
+            </div>
+          )}
         </div>
       </form>
     </div>

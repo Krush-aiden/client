@@ -43,8 +43,10 @@ export const signUpUser = createAsyncThunk<
   }
 });
 
+type LoginDetails = loginUserDetails | { googleToken: string };
+
 interface loginUserPayload {
-  loginUserDetails: loginUserDetails;
+  loginUserDetails: LoginDetails;
 }
 
 //MARK:loginUser
@@ -60,11 +62,40 @@ export const loginUser = createAsyncThunk<loginUserResponse, loginUserPayload>(
       return response.data;
     } catch (error: any) {
       console.error(
-        "Error signing up user:",
+        "Error logging in user:",
         error.message || error.response?.data || error
       );
       const errorMessage =
         error?.response?.data?.message || error?.message || "Failed to login";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+interface googleLoginPayload {
+  googleToken: string;
+}
+
+//MARK:googleLogin
+export const googleLogin = createAsyncThunk<loginUserResponse, googleLoginPayload>(
+  "googleLogin",
+  async ({ googleToken }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_USER}/google-login`,
+        { googleToken },
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error with Google login:",
+        error.message || error.response?.data || error
+      );
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Failed to login with Google";
       return rejectWithValue(errorMessage);
     }
   }
@@ -285,7 +316,7 @@ export const userApi = createSlice({
         localStorage.setItem("users", JSON.stringify(state.users));
       })
       .addCase(updateProfile.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to update profile");
+        handleRejected(state, action, (action?.payload as any) || "Failed to update profile");
       });
 
     builder
@@ -294,7 +325,7 @@ export const userApi = createSlice({
         handleFulfilled(state, action, "Password reset successfully");
       })
       .addCase(resetPassword.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to reset password");
+        handleRejected(state, action, (action?.payload as any) || "Failed to reset password");
       });
 
     builder
@@ -303,7 +334,7 @@ export const userApi = createSlice({
         handleFulfilled(state, action, "Sign up successful");
       })
       .addCase(signUpUser.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to sign up");
+        handleRejected(state, action, (action?.payload as any) || "Failed to Signup");
       });
 
     builder
@@ -313,7 +344,17 @@ export const userApi = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to login");
+        handleRejected(state, action, (action?.payload as any) || "Failed to login");
+      });
+
+    builder
+      .addCase(googleLogin.pending, handlePending)
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        handleFulfilled(state, action, action.payload.message);
+        state.isAuthenticated = true;
+      })
+      .addCase(googleLogin.rejected, (state, action) => {
+        handleRejected(state, action, (action?.payload as any) || "Failed to login with Google");
       });
 
     builder
@@ -326,7 +367,7 @@ export const userApi = createSlice({
         state.message = action.payload.message;
       })
       .addCase(logout.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to logout");
+        handleRejected(state, action, (action?.payload as any) || "Failed to logout");
       });
 
     builder
@@ -336,7 +377,7 @@ export const userApi = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(verifyEmail.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to verify email");
+        handleRejected(state, action, (action?.payload as any) || "Failed to verify email");
       });
 
     builder
@@ -364,7 +405,7 @@ export const userApi = createSlice({
         handleFulfilled(state, action, "Password reset email sent");
       })
       .addCase(forgetPassword.rejected, (state, action) => {
-        handleRejected(state, action, "Failed to send password reset email");
+        handleRejected(state, action, (action?.payload as any) || "Failed to send password reset email");
       });
   },
 });

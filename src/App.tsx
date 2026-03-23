@@ -27,7 +27,6 @@ import { AppDispatch } from "./app/store";
 import ResetPassword from "./auth/ResetPassword";
 
 const saveToLocalStorage = (isAuthenticated: any, users: any) => {
-  console.log("🚀 ~ saveToLocalStorage ~ users:", users);
   if (
     isAuthenticated &&
     users[0]?.user?.isVerified &&
@@ -223,14 +222,10 @@ function App() {
       null
     );
 
-    console.log("🚀 ~ useEffect ~ checkAuthUserParsed:", checkAuthUserParsed);
-    console.log("🚀 ~ useEffect ~ isAuthenticatedLoc:", isAuthenticatedLoc);
 
     if (!checkAuthUserParsed.length && !isAuthenticatedLoc) {
-      console.log("logout");
       dispatch(logout());
     } else {
-      console.log("isAuthenticatedFun");
       dispatch(isAuthenticatedFun());
     }
   }, [isAuthenticatedFun]);

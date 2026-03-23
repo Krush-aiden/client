@@ -59,6 +59,7 @@ const Restaurant = () => {
 
   const onSubmitFormHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("🚀 ~ onSubmitFormHandler ~ input:", input);
     const result = restaurantFormSchema.safeParse(input);
     console.log("🚀 ~ onSubmitFormHandler ~ result:", result);
     if (!result.success) {

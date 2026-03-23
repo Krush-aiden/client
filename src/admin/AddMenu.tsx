@@ -10,26 +10,31 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormEvent, useState } from "react";
-// import pizzaImage from "@/assets/Hero_Page_Pizza.jpg";
+import { FormEvent, useEffect, useState } from "react";
 import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
+import { AppDispatch } from "@/app/store";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addMenu,
+  fetchMenu,
+  deleteMenu,
+} from "@/feature/adminMenuSlicer";
 
 function AddMenu() {
   const [open, setOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
+  const [menuToDelete, setMenuToDelete] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+
+
   const [input, setInput] = useState<MenuFormSchema>({
     name: "",
     description: "",
     price: 0,
     image: undefined,
   });
-
-  const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    console.log("🚀 ~ changeEventHandler ~ name:", name);
-    setInput({ ...input, [name]: type === "number" ? Number(value) : value });
-  };
 
   const [selectedMenu, setSelectedMenu] = useState<MenuFormSchema>({
     name: "",
@@ -38,61 +43,81 @@ function AddMenu() {
     image: undefined,
   });
 
-  // const loading = false;
-  const menus = [
-    {
-      name: "pizza",
-      description: "lorem asjdkas asjdasdj",
-      price: 80,
-      image:
-        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
-    },
-    {
-      name: "momos",
-      description: "lorem asjdkas asjdasdj",
-      price: 80,
-      image:
-        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
-    },
-    {
-      name: "burger",
-      description: "lorem asjdkas asjdasdj",
-      price: 80,
-      image:
-        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
-    },
-    {
-      name: "crispy paneer",
-      description: "lorem asjdkas asjdasdj",
-      price: 80,
-      image:
-        "https://media.istockphoto.com/id/638000936/photo/vegan-and-vegetarian-indian-cuisine-hot-spicy-dishes.jpg?s=612x612&w=0&k=20&c=ISxBGeKALq9c11v05BbNw2XtRzQaGn4BddU8BHF9ANk=",
-    },
-  ];
-
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
 
-  const submitHandler = (e: FormEvent<HTMLFormElement>) => {
+  //MARK: Fetch Menus
+  useEffect(() => {
+    dispatch(fetchMenu()).unwrap();
+  }, [dispatch]);
+
+
+  const { menus, isLoading }: any = useSelector((state: any) => state.adminMenu);
+    useEffect(() => {
+  console.log("menu", menus)
+  }, [menus]);
+
+  //MARK: Input Change
+  const changeEventHandler = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
+
+    setInput((prev) => ({
+      ...prev,
+      [name]: name === "price" ? Number(value) : value,
+    }));
+  };
+
+  //MARK: Submit Menu
+  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const result = menuSchema.safeParse(input);
-    console.log("🚀 ~ submitHandler ~ result:", result);
-    console.log("🚀 ~ AddMenu ~ input:", input);
-    console.log("🚀 ~ AddMenu ~ error:", error);
 
     if (!result.success) {
       const fieldError = result.error.formErrors.fieldErrors;
-      console.log("🚀 ~ submitHandler ~ fieldError:", fieldError);
       setError(fieldError as Partial<MenuFormSchema>);
       return;
-    } else {
-      setError({
+    }
+
+    setError({});
+
+    try {
+      await dispatch(addMenu(input)).unwrap();
+
+      // reset form
+      setInput({
         name: "",
         description: "",
-        price: undefined,
+        price: 0,
         image: undefined,
       });
+
+      setOpen(false);
+
+      // refresh list
+      dispatch(fetchMenu());
+    } catch (error) {
+      console.log(error);
     }
-    //Todo api implementation starts here
+  };
+
+  //MARK: Delete Menu
+  const handleDeleteClick = (id: string) => {
+    setMenuToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (menuToDelete) {
+      try {
+        await dispatch(deleteMenu(menuToDelete)).unwrap();
+        setDeleteConfirmOpen(false);
+        setMenuToDelete(null);
+      } catch (err) {
+        console.log(err);
+      }
+    }
   };
 
   return (
@@ -101,10 +126,12 @@ function AddMenu() {
         <h1 className="font-bold md:font-extrabold text-lg md:text-2xl">
           Available Menu
         </h1>
+
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger className="bg-orange hover:bg-HoverOrange p-3 rounded-lg">
             + Add Menus
           </DialogTrigger>
+
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
@@ -114,145 +141,167 @@ function AddMenu() {
                 </DialogDescription>
               </DialogTitle>
             </DialogHeader>
+
             <form
-              action=""
               onSubmit={submitHandler}
               className="space-y-6 max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg"
             >
-              {/* Name Field */}
+              {/* Name */}
               <div>
-                <Label className="block text-sm font-semibold text-gray-700">
-                  Menu Name
-                </Label>
+                <Label>Menu Name</Label>
                 <Input
                   type="text"
                   name="name"
+                  value={input.name}
                   onChange={changeEventHandler}
-                  placeholder="Enter menu name"
-                  className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && (
-                  <span className="text-xs font-extrabold text-red-600">
+                {error.name && (
+                  <span className="text-xs text-red-600">
                     {error.name}
                   </span>
                 )}
               </div>
 
-              {/* Description Field */}
+              {/* Description */}
               <div>
-                <Label className="block text-sm font-semibold text-gray-700">
-                  Description
-                </Label>
+                <Label>Description</Label>
                 <Input
                   type="text"
                   name="description"
+                  value={input.description}
                   onChange={changeEventHandler}
-                  placeholder="Enter menu description"
-                  className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && (
-                  <span className="text-xs font-extrabold text-red-600">
+                {error.description && (
+                  <span className="text-xs text-red-600">
                     {error.description}
                   </span>
                 )}
               </div>
 
-              {/* Price Field */}
+              {/* Price */}
               <div>
-                <Label className="block text-sm font-semibold text-gray-700">
-                  Price in (₹)
-                </Label>
+                <Label>Price</Label>
                 <Input
                   type="number"
                   name="price"
+                  value={input.price}
                   onChange={changeEventHandler}
-                  placeholder="Enter menu price"
-                  className="bg-white mt-2 px-4 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && (
-                  <span className="text-xs font-extrabold text-red-600">
+                {error.price && (
+                  <span className="text-xs text-red-600">
                     {error.price}
                   </span>
                 )}
               </div>
 
-              {/* Image Upload Field */}
+              {/* Image */}
               <div>
-                <Label className="block text-sm font-semibold text-gray-700">
-                  Upload Menu Image
-                </Label>
+                <Label>Upload Image</Label>
                 <input
                   type="file"
-                  name="image"
                   onChange={(e) =>
-                    setInput({
-                      ...input,
-                      image: e.target.files?.[0] || undefined,
-                    })
+                    setInput((prev) => ({
+                      ...prev,
+                      image: e.target.files?.[0],
+                    }))
                   }
-                  className="bg-white mt-2 w-full text-gray-700 border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {error && (
-                  <span className="text-xs font-extrabold text-red-600">
+                {error.image && (
+                  <span className="text-xs text-red-600">
                     {error.image}
                   </span>
                 )}
               </div>
 
-              {/* Submit Button */}
               <DialogFooter>
-                <Button className="w-full py-2 bg-orange hover:bg-HoverOrange text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  Submit
+                <Button 
+                  disabled={isLoading}
+                  className="w-full py-2 bg-orange hover:bg-HoverOrange text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isLoading && (
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {isLoading ? "Adding..." : "Submit"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </div>
-      {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        menus.map((menu: any, idx: number) => {
-          return (
-            <div key={idx} className="mt-6 space-y-4">
-              <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
-                <img
-                  src={menu.image}
-                  alt="res_Image"
-                  className="md:h-24 md:w-24 object-cover w-full h-full rounded-lg shadow-lg"
-                />
-                <div className="flex-1 text-left">
-                  <h1 className="text-lg font-semibold text-gray-800">
-                    {menu.name}
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {" "}
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  </p>
-                  <h2 className="text-md font-semibold mt-2">
-                    Price: <span className="text-[#D19254]">₹80</span>
-                  </h2>
-                </div>
-                <Button
-                  onClick={() => {
-                    console.log("🚀 ~ menus.map ~ menu:", menu);
-                    setSelectedMenu(menu);
-                    setEditOpen(true);
-                  }}
-                  className="bg-orange hover:bg-hoverOrange mt-2"
-                  size={"sm"}
-                >
-                  Edit
-                </Button>
-              </div>
+
+      {/* Menu List */}
+      {menus?.map((menu: any) => (
+        <div key={menu._id} className="mt-6">
+          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
+            <img
+              src={menu.imageUrl}
+              className="md:h-24 md:w-24 object-cover rounded-lg"
+            />
+
+            <div className="flex-1 text-left">
+              <h1 className="text-lg font-semibold">{menu.name}</h1>
+              <p className="text-sm text-gray-600">
+                {menu.description}
+              </p>
+              <h2>₹{menu.price}</h2>
             </div>
-          );
-        })
-      }
+
+            <Button
+              onClick={() => {
+                setSelectedMenu(menu);
+                setEditOpen(true);
+              }}
+              size="sm"
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              Edit
+            </Button>
+
+            <Button
+              onClick={() => handleDeleteClick(menu._id)}
+              size="sm"
+              className="bg-red-500 ml-2"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      ))}
+
       <EditMenu
         selectedMenu={selectedMenu}
         editOpen={editOpen}
         setEditOpen={setEditOpen}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this menu? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button
+              onClick={() => setDeleteConfirmOpen(false)}
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Yes, Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
