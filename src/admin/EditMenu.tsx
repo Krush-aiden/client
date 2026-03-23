@@ -26,7 +26,7 @@ function EditMenu({
   editOpen,
   setEditOpen,
 }: {
-  selectedMenu: MenuFormSchema;
+  selectedMenu: MenuFormSchema & { _id?: string };
   editOpen: boolean;
   setEditOpen: Dispatch<SetStateAction<boolean>>;
 }) {
