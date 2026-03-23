@@ -66,6 +66,7 @@ export type updateProfileDetails = {
   city: string,
   country: string,
   profilePictureName: any,
+  admin?: boolean,
 }
 
 export type updateProfileDetailsRes = {
@@ -76,4 +77,5 @@ export type updateProfileDetailsRes = {
   country: string,
   profilePictureName: string,
   message:string,
+  admin?: boolean,
 }

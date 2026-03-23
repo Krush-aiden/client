@@ -23,6 +23,7 @@ export interface RestaurantUpdateAndEditDetails {
   restaurantEdt?: any;
   restaurantCuisines?: string[];
   restaurantImage?: any;
+  isActive?: boolean;
 }
 
 interface RestaurantUpdateAndEditResponse {
@@ -67,18 +68,18 @@ export const fetchRestaurantFunction = createAsyncThunk(
       const response = await axios.get(`${API_ADMIN_RESTAURANT_ROUT_URL}/`, {
         withCredentials: true, // Include credentials (cookies)
       });
-      console.log("response",response);
+      console.log("response", response);
       return response.data;
     } catch (error: any) {
       console.error(
         "Error signing up user:",
-        error.message || error.response?.data || error
+        error.message || error.response?.data || error,
       );
       const errorMessage =
         error?.response?.data?.message || error?.message || "Failed to login";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 //MARK:Restaurant Add
@@ -98,7 +99,7 @@ export const restaurantUpdate = createAsyncThunk<
             key,
             restaurantUpdateDetails[
               key as keyof RestaurantUpdateAndEditDetails
-            ] as any
+            ] as any,
           );
         }
       }
@@ -110,7 +111,7 @@ export const restaurantUpdate = createAsyncThunk<
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } catch (error: any) {
@@ -121,7 +122,7 @@ export const restaurantUpdate = createAsyncThunk<
         "Failed to update restaurant";
       return rejectWithValue(errorMsg);
     }
-  }
+  },
 );
 
 //MARK:Restaurant Update
@@ -141,7 +142,7 @@ export const restaurantEdit = createAsyncThunk<
             key,
             RestaurantEditDetails[
               key as keyof RestaurantUpdateAndEditDetails
-            ] as any
+            ] as any,
           );
         }
       }
@@ -153,7 +154,7 @@ export const restaurantEdit = createAsyncThunk<
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } catch (error: any) {
@@ -164,7 +165,7 @@ export const restaurantEdit = createAsyncThunk<
         "Failed to update restaurant";
       return rejectWithValue(errorMsg);
     }
-  }
+  },
 );
 
 //MARK:Menu Add
@@ -180,7 +181,7 @@ export const addMenu = createAsyncThunk<
       if (MenuAddAndEditPayload.hasOwnProperty(key)) {
         formData.append(
           key,
-          MenuAddAndEditPayload[key as keyof MenuAddAndEditDetails] as any
+          MenuAddAndEditPayload[key as keyof MenuAddAndEditDetails] as any,
         );
       }
     }
@@ -192,7 +193,7 @@ export const addMenu = createAsyncThunk<
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return response.data;
   } catch (error: any) {
@@ -228,7 +229,7 @@ const adminSlicer = createSlice({
           state.error = false;
           state.message = action.payload.message;
           toast.success("Restaurant updated successfully");
-        }
+        },
       )
       .addCase(
         restaurantUpdate.rejected,
@@ -237,7 +238,7 @@ const adminSlicer = createSlice({
           state.error = true;
           state.message = action.payload;
           toast.error("Failed to update restaurant");
-        }
+        },
       );
     builder
       .addCase(restaurantEdit.pending, (state) => {
@@ -252,7 +253,7 @@ const adminSlicer = createSlice({
           state.error = false;
           state.message = action.payload.message;
           toast.success("Restaurant updated successfully");
-        }
+        },
       )
       .addCase(restaurantEdit.rejected, (state, action: PayloadAction<any>) => {
         state.isLoading = false;
@@ -271,7 +272,7 @@ const adminSlicer = createSlice({
           state.error = false;
           console.log("🚀 ~ .addCase ~ action:", action.payload);
           state.restaurantDetails = [action.payload];
-        }
+        },
       )
       .addCase(
         fetchRestaurantFunction.rejected,
@@ -279,7 +280,7 @@ const adminSlicer = createSlice({
           state.isLoading = false;
           state.error = true;
           state.message = action.payload;
-        }
+        },
       );
     builder
       .addCase(addMenu.pending, (state) => {

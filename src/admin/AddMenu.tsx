@@ -15,11 +15,7 @@ import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
 import { AppDispatch } from "@/app/store";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addMenu,
-  fetchMenu,
-  deleteMenu,
-} from "@/feature/adminMenuSlicer";
+import { addMenu, fetchMenu, deleteMenu } from "@/feature/adminMenuSlicer";
 
 function AddMenu() {
   const [open, setOpen] = useState<boolean>(false);
@@ -27,7 +23,6 @@ function AddMenu() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
   const [menuToDelete, setMenuToDelete] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
-
 
   const [input, setInput] = useState<MenuFormSchema>({
     name: "",
@@ -50,16 +45,15 @@ function AddMenu() {
     dispatch(fetchMenu()).unwrap();
   }, [dispatch]);
 
-
-  const { menus, isLoading }: any = useSelector((state: any) => state.adminMenu);
-    useEffect(() => {
-  console.log("menu", menus)
+  const { menus, isLoading }: any = useSelector(
+    (state: any) => state.adminMenu,
+  );
+  useEffect(() => {
+    console.log("menu", menus);
   }, [menus]);
 
   //MARK: Input Change
-  const changeEventHandler = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     setInput((prev) => ({
@@ -121,9 +115,9 @@ function AddMenu() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto my-10">
-      <div className="flex justify-between">
-        <h1 className="font-bold md:font-extrabold text-lg md:text-2xl">
+    <div className="max-w-6xl mx-auto mt-20 mb-10 px-4">
+      <div className="flex items-center justify-between">
+        <h1 className="font-bold md:font-extrabold text-lg md:text-2xl dark:text-white">
           Available Menu
         </h1>
 
@@ -144,7 +138,7 @@ function AddMenu() {
 
             <form
               onSubmit={submitHandler}
-              className="space-y-6 max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg"
+              className="space-y-6 max-w-lg mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
             >
               {/* Name */}
               <div>
@@ -156,9 +150,7 @@ function AddMenu() {
                   onChange={changeEventHandler}
                 />
                 {error.name && (
-                  <span className="text-xs text-red-600">
-                    {error.name}
-                  </span>
+                  <span className="text-xs text-red-600">{error.name}</span>
                 )}
               </div>
 
@@ -188,9 +180,7 @@ function AddMenu() {
                   onChange={changeEventHandler}
                 />
                 {error.price && (
-                  <span className="text-xs text-red-600">
-                    {error.price}
-                  </span>
+                  <span className="text-xs text-red-600">{error.price}</span>
                 )}
               </div>
 
@@ -207,21 +197,35 @@ function AddMenu() {
                   }
                 />
                 {error.image && (
-                  <span className="text-xs text-red-600">
-                    {error.image}
-                  </span>
+                  <span className="text-xs text-red-600">{error.image}</span>
                 )}
               </div>
 
               <DialogFooter>
-                <Button 
+                <Button
                   disabled={isLoading}
                   className="w-full py-2 bg-orange hover:bg-HoverOrange text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isLoading && (
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                   )}
                   {isLoading ? "Adding..." : "Submit"}
@@ -233,43 +237,50 @@ function AddMenu() {
       </div>
 
       {/* Menu List */}
-      {menus?.map((menu: any) => (
-        <div key={menu._id} className="mt-6">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
+      <div className="mt-6 space-y-4">
+        {menus?.map((menu: any) => (
+          <div
+            key={menu._id}
+            className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
+          >
             <img
               src={menu.imageUrl}
-              className="md:h-24 md:w-24 object-cover rounded-lg"
+              alt={menu.name}
+              className="w-16 h-16 object-cover rounded-xl flex-shrink-0"
             />
-
-            <div className="flex-1 text-left">
-              <h1 className="text-lg font-semibold">{menu.name}</h1>
-              <p className="text-sm text-gray-600">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-800 dark:text-white">
+                {menu.name}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {menu.description}
               </p>
-              <h2>₹{menu.price}</h2>
+              <span className="text-orange font-bold text-sm">
+                ₹{menu.price}
+              </span>
             </div>
-
-            <Button
-              onClick={() => {
-                setSelectedMenu(menu);
-                setEditOpen(true);
-              }}
-              size="sm"
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              Edit
-            </Button>
-
-            <Button
-              onClick={() => handleDeleteClick(menu._id)}
-              size="sm"
-              className="bg-red-500 ml-2"
-            >
-              Delete
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                onClick={() => {
+                  setSelectedMenu(menu);
+                  setEditOpen(true);
+                }}
+                size="sm"
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                Edit
+              </Button>
+              <Button
+                onClick={() => handleDeleteClick(menu._id)}
+                size="sm"
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                Delete
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       <EditMenu
         selectedMenu={selectedMenu}
@@ -283,7 +294,8 @@ function AddMenu() {
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this menu? This action cannot be undone.
+              Are you sure you want to delete this menu? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 justify-end">

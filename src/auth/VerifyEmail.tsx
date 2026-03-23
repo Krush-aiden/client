@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { useState, useRef, FormEvent, useEffect } from "react";
 import { verifyEmail } from "@/feature/UserSlicer";
 import { AppDispatch } from "@/app/store";
@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 
 const VerifyEmail = () => {
   const inputRef = useRef<(HTMLInputElement | null)[]>([]);
-  // console.log("🚀 ~ VerifyEmail ~ inputRef:", inputRef);
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [verified, setVerified] = useState(false);
 
   const handleChange = (index: number, value: string) => {
     if (/^[a-zA-Z0-9]$/.test(value) || value === "") {
@@ -24,7 +24,7 @@ const VerifyEmail = () => {
 
   const handleKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
+    e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key == "Backspace" && otp[index] === "" && index > 0) {
       inputRef.current[index - 1]?.focus();
@@ -41,9 +41,12 @@ const VerifyEmail = () => {
     const verificationCodeVal = otp.join("");
     try {
       if (verificationCodeVal !== "") {
-        dispatch(
-          await verifyEmail({ verifyEmailCode: verificationCodeVal })
+        const result = await dispatch(
+          verifyEmail({ verifyEmailCode: verificationCodeVal }),
         ).unwrap();
+        if (result?.success && result?.user?.isVerified) {
+          setVerified(true);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -52,56 +55,71 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     setLoading(isLoading);
-    if (users[0]?.success && users[0]?.user?.isVerified) {
+  }, [isLoading]);
+
+  // Only redirect after a successful verification action from this page
+  useEffect(() => {
+    if (verified) {
       navigate("/login");
     }
-  }, [navigate, isLoading, users]);
+  }, [verified, navigate]);
+
+  // If user is already authenticated & verified, redirect to home
+  useEffect(() => {
+    const isAuth = localStorage.getItem("isAuthenticated") === "true";
+    if (isAuth) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center h-screen w-full bg-white">
-      <div className="p-8 rounded-md w-full max-w-md flex flex-col gap-10 border border-gray-200 bg-white">
+    <div className="flex items-center justify-center h-screen w-full bg-white dark:bg-gray-900">
+      <div className="p-8 rounded-2xl w-full max-w-md flex flex-col gap-8 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
         <div className="text-center">
-          <h1 className="font-extrabold text-2xl">Verify your e-mail</h1>
-          <p className="text-sm text-gray-600">Enter the 6 digit code</p>
+          <div className="w-16 h-16 bg-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-orange" />
+          </div>
+          <h1 className="font-extrabold text-2xl dark:text-white">
+            Verify your e-mail
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            We sent a 6-digit code to your email. Enter it below.
+          </p>
         </div>
         <form onSubmit={submitHandler}>
           <div className="flex gap-2 justify-center">
-            {otp.map((letter: string, idx: number) => {
-              //   console.log("🚀 ~ idx:", idx);
-              //   console.log("🚀 ~ letter:", letter);
-              return (
-                <input
-                  type="text"
-                  key={idx}
-                  value={letter}
-                  maxLength={1}
-                  className="md:w-12 md:h-12 w-8 h-8 bg-white text-black text-center text-sm md:text-2xl font-normal md:font-bold rounded-lg border border-gray-600"
-                  ref={(element) => (inputRef.current[idx] = element)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(idx, e.target.value)
-                  }
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                    handleKeyDown(idx, e)
-                  }
-                />
-              );
-            })}
+            {otp.map((letter: string, idx: number) => (
+              <input
+                type="text"
+                key={idx}
+                value={letter}
+                maxLength={1}
+                className="md:w-12 md:h-12 w-9 h-9 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center text-sm md:text-2xl font-bold rounded-xl border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange focus:border-orange transition-all"
+                ref={(element) => (inputRef.current[idx] = element)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleChange(idx, e.target.value)
+                }
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                  handleKeyDown(idx, e)
+                }
+              />
+            ))}
           </div>
-          <div className="mb-10">
+          <div className="mt-8">
             {loading ? (
               <button
                 disabled
-                className="w-full bg-orange flex items-center justify-center py-2 px-3 mt-10 opacity-50 cursor-not-allowed"
+                className="w-full bg-orange/70 text-white flex items-center justify-center py-3 rounded-xl font-medium cursor-not-allowed"
               >
-                <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                Please wait
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Verifying...
               </button>
             ) : (
               <button
                 type="submit"
-                className="w-full bg-orange hover:bg-hoverOrange py-3 px-4 mt-10"
+                className="w-full bg-orange hover:bg-hoverOrange text-white py-3 rounded-xl font-medium transition-colors"
               >
-                Login
+                Verify Email
               </button>
             )}
           </div>

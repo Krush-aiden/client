@@ -21,7 +21,7 @@ import AddMenu from "./admin/AddMenu";
 import Order from "./admin/Order";
 import Success from "./projectComponents/Success";
 import { useEffect } from "react";
-import { isAuthenticatedFun, logout } from "@/feature/UserSlicer";
+import { isAuthenticatedFun, clearUser } from "@/feature/UserSlicer";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "./app/store";
 import ResetPassword from "./auth/ResetPassword";
@@ -53,7 +53,7 @@ const saveToLocalStorage = (isAuthenticated: any, users: any) => {
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
-    (state) => state.user
+    (state) => state.user,
   );
   const { isAuthenticatedLoc } = saveToLocalStorage(isAuthenticated, users);
   if (!isAuthenticatedLoc) {
@@ -67,11 +67,11 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
 
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
-    (state) => state.user
+    (state) => state.user,
   );
   const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
     isAuthenticated,
-    users
+    users,
   );
   if (isAuthenticatedLoc && checkAuthUserParsed[0]?.user?.isVerified) {
     return <Navigate to="/" replace />;
@@ -81,7 +81,6 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
     users[0]?.user?.isVerified == false &&
     !isAuthenticatedLoc
   ) {
-    window.location.reload();
     return <Navigate to="/VerifyEmail" replace />;
   }
   return children;
@@ -89,7 +88,7 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
 
 const AdminRout = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, users }: any = useSelector<any>(
-    (state) => state.user
+    (state) => state.user,
   );
   const { checkAuthUserParsed } = saveToLocalStorage(isAuthenticated, users);
   if (!checkAuthUserParsed[0]?.user?.admin) {
@@ -101,11 +100,7 @@ const AdminRout = ({ children }: { children: React.ReactNode }) => {
 const appRouter = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <ProtectedRoutes>
-        <MainLayout />
-      </ProtectedRoutes>
-    ),
+    element: <MainLayout />,
     children: [
       {
         path: "/",
@@ -113,7 +108,11 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "/Profile",
-        element: <Profile />,
+        element: (
+          <ProtectedRoutes>
+            <Profile />
+          </ProtectedRoutes>
+        ),
       },
       {
         path: "/Search/:text",
@@ -125,7 +124,11 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "/order/status",
-        element: <Success />,
+        element: (
+          <ProtectedRoutes>
+            <Success />
+          </ProtectedRoutes>
+        ),
       },
       {
         path: "/Cart",
@@ -219,12 +222,11 @@ function App() {
   useEffect(() => {
     const { isAuthenticatedLoc, checkAuthUserParsed } = saveToLocalStorage(
       false,
-      null
+      null,
     );
 
-
     if (!checkAuthUserParsed.length && !isAuthenticatedLoc) {
-      dispatch(logout());
+      dispatch(clearUser());
     } else {
       dispatch(isAuthenticatedFun());
     }

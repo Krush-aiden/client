@@ -5,13 +5,13 @@ export const restaurantFormSchema = z.object({
     restaurantCity: z.string().min(1, "City name is required"),
     restaurantCountry: z.string().min(1, "Country name is required."),
     restaurantEdt: z.number().min(2,"Delivery time must be at least 2 minutes."),
-    restaurantCuisines: z.array(z.string()).min(2,"At least two cuisine is required"),
+    restaurantCuisines: z.array(z.string()).min(2,"At least two cuisines are required"),
     restaurantImage: z
-  .any()
-  .refine((file) => file instanceof File && file.size !== 0, {
-    message: "Image file is required",
-  })
-  .optional(),
+      .any()
+      .refine((file) => file instanceof File && file.size > 0, {
+        message: "Image file is required",
+      })
+      .optional(),
 });
 
 export type restaurantFormSchema = z.infer<typeof restaurantFormSchema>;
