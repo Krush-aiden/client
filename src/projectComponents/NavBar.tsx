@@ -50,8 +50,6 @@ const Navbar = () => {
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
-  } else {
-    console.log("No data found for users in localStorage.");
   }
   const [profileImgUrl, setProfileImg] = useState(
     "https://github.com/shadcn.png",
@@ -71,8 +69,6 @@ const Navbar = () => {
       } catch (error) {
         console.error("Error parsing JSON:", error);
       }
-    } else {
-      console.log("No data found for users in localStorage.");
     }
     if (message == "Logged out successfully.") {
       localStorage.removeItem("isAuthenticated");
@@ -218,8 +214,6 @@ const MobileNavbar = () => {
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
-  } else {
-    console.log("No data found for users in localStorage.");
   }
 
   const admin = adminParsed[0]?.user?.admin;

@@ -45,8 +45,6 @@ const saveToLocalStorage = (isAuthenticated: any, users: any) => {
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
-  } else {
-    console.log("No data found for users in localStorage.");
   }
   return { isAuthenticatedLoc, checkAuthUserParsed };
 };
