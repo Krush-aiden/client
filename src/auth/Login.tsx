@@ -100,15 +100,14 @@ const Login = () => {
         callback: handleGoogleSuccess,
       });
 
-      const googleButton = document.getElementById("googleSignInButton");
-
-      if (googleButton) {
-        googleButton.innerHTML = ""; // clear previous render
-
-        window.google.accounts.id.renderButton(googleButton, {
+      const container = document.getElementById("googleSignInButton");
+      if (container) {
+        container.innerHTML = "";
+        window.google.accounts.id.renderButton(container, {
           theme: "outline",
           size: "large",
-          width: 300, // ✅ FIXED
+          width: 400,
+          text: "continue_with",
         });
       }
 
@@ -148,10 +147,13 @@ const Login = () => {
 
         {/* Google Sign-In Button */}
         <div className="mb-6">
-          <div id="googleSignInButton" className="flex justify-center"></div>
+          <div
+            id="googleSignInButton"
+            className="flex justify-center w-full"
+          ></div>
         </div>
 
-        <div className="flex items-center gap-4 my-6">
+        <div className="flex items-center gap-4 mb-6">
           <div className="flex-grow border-t border-gray-300"></div>
           <span className="text-gray-500 text-sm">Or continue with email</span>
           <div className="flex-grow border-t border-gray-300"></div>
@@ -253,8 +255,9 @@ const Login = () => {
           >
             Note
             <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${showInfo ? "rotate-180" : ""
-                }`}
+              className={`h-4 w-4 transition-transform duration-200 ${
+                showInfo ? "rotate-180" : ""
+              }`}
             />
           </button>
 
@@ -262,19 +265,8 @@ const Login = () => {
             <div className="mt-2 text-sm text-gray-600 space-y-2">
               <p>
                 1. Please allow up to 1 minute for login or account creation
-                attempts using dummy credentials. Due to the free-tier limitations
-                on Render
-              </p>
-              <p>
-                2. This project is a <strong>work-in-progress</strong>. The frontend{" "}
-                <strong>UI components</strong> have been fully designed and
-                implemented, providing a polished and interactive user experience.
-                Additionally, <strong>Authentication</strong>,
-                <strong>Authorization</strong>, and{" "}
-                <strong>Profile data management</strong>
-                have been completed on both the frontend and backend sides. However,
-                the backend functionality is still being finalized, with some
-                endpoints and features in development.
+                attempts using dummy credentials. Due to the free-tier
+                limitations on Render
               </p>
             </div>
           )}
