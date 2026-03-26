@@ -66,6 +66,14 @@ function HeroSection() {
 
   return (
     <div className="w-full">
+      {/* Info Banner */}
+      <div className="mt-16 mx-auto max-w-7xl px-4 pt-3">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-4 py-2.5 text-sm text-amber-700 dark:text-amber-300">
+          Please allow up to 1 minute for login or account creation attempts
+          using dummy credentials, due to the free-tier limitations on Render.
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 min-h-[85vh] flex items-center">
         {/* Decorative blobs */}
