@@ -22,10 +22,10 @@ import { clearCart } from "@/feature/cartSlicer";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 
-const API_RESTAURANT_URL: string | undefined =
+const API_PAYMENT_URL: string | undefined =
   import.meta.env.VITE_ENVIRONMENT == "prod"
-    ? `${import.meta.env.VITE_BACKEND_USER_API_URL_PROD}/api/v1/restaurantRout`
-    : `${import.meta.env.VITE_BACKEND_USER_API_URL_DEV}/api/v1/restaurantRout`;
+    ? `${import.meta.env.VITE_BACKEND_USER_API_URL_PROD}/api/v1/payment`
+    : `${import.meta.env.VITE_BACKEND_USER_API_URL_DEV}/api/v1/payment`;
 
 function CheckOutConfirmPage({
   open,
@@ -71,7 +71,7 @@ function CheckOutConfirmPage({
                 : user.country || prev.country,
             }));
           }
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       }
@@ -84,13 +84,25 @@ function CheckOutConfirmPage({
   };
   const checkOutHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("\n══════════════════════════════════════════════");
+    console.log("🛒 CHECKOUT HANDLER — User clicked 'Pay & Order'");
+    console.log("══════════════════════════════════════════════");
+
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    console.log("🔐 isAuthenticated:", isAuthenticated);
     if (!isAuthenticated) {
+      console.log("❌ Not authenticated — redirecting to /Login");
       setOpen(false);
       navigate("/Login");
       return;
     }
-    if (!restaurantId || items.length === 0) return;
+
+    console.log("📌 restaurantId:", restaurantId);
+    console.log("📌 items count:", items.length);
+    if (!restaurantId || items.length === 0) {
+      console.log("❌ No restaurant or empty cart — aborting");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -105,26 +117,58 @@ function CheckOutConfirmPage({
         price: item.price,
         quantity: item.quantity,
       }));
-      await axios.post(
-        `${API_RESTAURANT_URL}/order/create`,
+
+      const deliveryDetails = {
+        email: input.email,
+        name: input.name,
+        address: input.address,
+        city: input.city,
+      };
+
+      console.log("\n📦 Preparing payment request:");
+      console.log("   restaurant:", restaurantId);
+      console.log(
+        "   deliveryDetails:",
+        JSON.stringify(deliveryDetails, null, 2),
+      );
+      console.log("   cartItems:", JSON.stringify(cartItems, null, 2));
+      console.log("   totalAmount (₹):", totalAmount);
+      console.log("   API_PAYMENT_URL:", API_PAYMENT_URL);
+
+      console.log("\n📤 Sending POST to:", `${API_PAYMENT_URL}/initiate`);
+
+      // Initiate PhonePe payment
+      const { data } = await axios.post(
+        `${API_PAYMENT_URL}/initiate`,
         {
           restaurant: restaurantId,
-          deliveryDetails: {
-            email: input.email,
-            name: input.name,
-            address: input.address,
-            city: input.city,
-          },
+          deliveryDetails,
           cartItems,
           totalAmount,
         },
         { withCredentials: true },
       );
-      dispatch(clearCart());
-      setOpen(false);
-      navigate("/order/status");
+
+      console.log("\n📥 Response from backend:");
+      console.log("   success:", data.success);
+      console.log("   orderId:", data.orderId);
+      console.log("   redirectUrl:", data.redirectUrl);
+
+      if (data.success && data.redirectUrl) {
+        console.log("✅ Payment initiated! Clearing cart and redirecting...");
+        console.log("🔗 Redirecting to PhonePe:", data.redirectUrl);
+        dispatch(clearCart());
+        setOpen(false);
+        // Redirect to PhonePe payment page
+        window.location.href = data.redirectUrl;
+      } else {
+        console.error(
+          "❌ Payment initiation failed — unexpected response:",
+          data,
+        );
+      }
     } catch (error) {
-      console.error("Failed to place order:", error);
+      console.error("❌ Failed to initiate payment:", error);
     } finally {
       setSubmitting(false);
     }
@@ -218,10 +262,10 @@ function CheckOutConfirmPage({
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Placing Order...
+                  Redirecting to Payment...
                 </>
               ) : (
-                "Confirm Order"
+                "Pay & Order"
               )}
             </Button>
           </DialogFooter>

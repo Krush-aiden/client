@@ -6,12 +6,12 @@ import {
   ChefHat,
   ArrowRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import pizza_3000285_1280 from "@/assets/pizza-3000285_1280.png";
 import { useNavigate } from "react-router-dom";
 import AdminDashboard from "@/admin/AdminDashboard";
 
-const popularCuisines = [
+const defaultCuisines = [
   "Pizza",
   "Biryani",
   "Burger",
@@ -21,6 +21,14 @@ const popularCuisines = [
   "Chinese",
   "Dosa",
 ];
+
+function saveRecentSearch(term: string) {
+  const key = "recentSearches";
+  const stored = JSON.parse(localStorage.getItem(key) || "[]") as string[];
+  const filtered = stored.filter((s) => s.toLowerCase() !== term.toLowerCase());
+  filtered.unshift(term);
+  localStorage.setItem(key, JSON.stringify(filtered.slice(0, 5)));
+}
 
 const features = [
   {
@@ -47,7 +55,18 @@ const features = [
 
 function HeroSection() {
   const [searchText, setSearchText] = useState<string>("");
+  const [popularCuisines, setPopularCuisines] =
+    useState<string[]>(defaultCuisines);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const stored = JSON.parse(
+      localStorage.getItem("recentSearches") || "[]",
+    ) as string[];
+    if (stored.length > 0) {
+      setPopularCuisines(stored);
+    }
+  }, []);
 
   const adminVal = localStorage.getItem("users");
   let adminParsed: any[] = [];
@@ -111,14 +130,19 @@ function HeroSection() {
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && searchText)
+                    if (e.key === "Enter" && searchText) {
+                      saveRecentSearch(searchText);
                       navigate(`/Search/${searchText}`);
+                    }
                   }}
                   placeholder="Search for restaurants, cuisines..."
                 />
                 <button
                   onClick={() => {
-                    if (searchText) navigate(`/Search/${searchText}`);
+                    if (searchText) {
+                      saveRecentSearch(searchText);
+                      navigate(`/Search/${searchText}`);
+                    }
                   }}
                   className="bg-orange hover:bg-hoverOrange text-white px-6 py-3 rounded-xl font-medium transition-all hover:shadow-lg hover:shadow-orange/25 flex items-center gap-2"
                 >
@@ -131,7 +155,7 @@ function HeroSection() {
             {/* Quick Cuisine Tags */}
             <div className="flex flex-wrap gap-2 justify-center md:justify-start pt-2">
               <span className="text-sm text-gray-500 dark:text-gray-400 mr-1 self-center">
-                Popular:
+                {popularCuisines === defaultCuisines ? "Popular:" : "Recent:"}
               </span>
               {popularCuisines.map((cuisine) => (
                 <button

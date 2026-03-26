@@ -67,6 +67,15 @@ function SearchPage() {
   useEffect(() => {
     if (text) {
       setSearchText(text);
+      // Save to recent searches
+      const key = "recentSearches";
+      const stored = JSON.parse(localStorage.getItem(key) || "[]") as string[];
+      const filtered = stored.filter(
+        (s) => s.toLowerCase() !== text.toLowerCase(),
+      );
+      filtered.unshift(text);
+      localStorage.setItem(key, JSON.stringify(filtered.slice(0, 5)));
+
       fetchResults(text, selectedFilters);
     }
   }, [text]);

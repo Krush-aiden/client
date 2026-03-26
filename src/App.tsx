@@ -20,6 +20,7 @@ import Restaurant from "./admin/Restaurant";
 import AddMenu from "./admin/AddMenu";
 import Order from "./admin/Order";
 import Success from "./projectComponents/Success";
+import PaymentVerify from "./projectComponents/PaymentVerify";
 import { useEffect } from "react";
 import { isAuthenticatedFun, clearUser } from "@/feature/UserSlicer";
 import { useDispatch, useSelector } from "react-redux";
@@ -131,6 +132,14 @@ const appRouter = createBrowserRouter([
       {
         path: "/Cart",
         element: <Cart />,
+      },
+      {
+        path: "/payment/verify",
+        element: (
+          <ProtectedRoutes>
+            <PaymentVerify />
+          </ProtectedRoutes>
+        ),
       },
       {
         path: "/Resetpassword",

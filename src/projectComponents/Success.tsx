@@ -8,6 +8,7 @@ import {
   Loader2,
   MapPin,
   ShoppingBag,
+  XCircle,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -32,6 +33,7 @@ const statusLabels: Record<string, string> = {
   preparing: "Preparing",
   outForDelivery: "Out for Delivery",
   delivered: "Delivered",
+  cancelled: "Cancelled",
 };
 
 const statusColors: Record<string, string> = {
@@ -44,6 +46,7 @@ const statusColors: Record<string, string> = {
     "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
   delivered:
     "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
 
 interface OrderData {
@@ -64,12 +67,15 @@ interface OrderData {
   }[];
   totalAmount?: number;
   status: string;
+  cancelReason?: string;
+  paymentStatus?: string;
   createdAt?: string;
 }
 
 function Success() {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -86,6 +92,32 @@ function Success() {
     };
     fetchOrders();
   }, []);
+
+  const handleCancelOrder = async (orderId: string) => {
+    setCancellingId(orderId);
+    try {
+      await axios.post(
+        `${API_RESTAURANT_URL}/order/${orderId}/cancel`,
+        { cancelReason: "Cancelled by customer" },
+        { withCredentials: true },
+      );
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId
+            ? {
+                ...o,
+                status: "cancelled",
+                cancelReason: "Cancelled by customer",
+              }
+            : o,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to cancel order:", error);
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -178,40 +210,57 @@ function Success() {
                   </Badge>
                 </div>
 
-                {/* Progress tracker */}
-                {currentStep >= 0 && currentStep < statusSteps.length && (
-                  <div className="flex items-center justify-between px-6 py-4">
-                    {statusSteps.map((step, i) => (
-                      <div
-                        key={step}
-                        className="flex items-center flex-1 last:flex-initial"
-                      >
-                        <div className="flex flex-col items-center">
-                          <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
-                              i <= currentStep
-                                ? "bg-orange text-white"
-                                : "bg-gray-200 dark:bg-gray-700 text-gray-400"
-                            }`}
-                          >
-                            {i < currentStep ? "\u2713" : i + 1}
-                          </div>
-                          <span className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 text-center w-14 leading-tight">
-                            {statusLabels[step]}
-                          </span>
-                        </div>
-                        {i < statusSteps.length - 1 && (
-                          <div
-                            className={`flex-1 h-0.5 mx-1 mt-[-14px] ${
-                              i < currentStep
-                                ? "bg-orange"
-                                : "bg-gray-200 dark:bg-gray-700"
-                            }`}
-                          />
-                        )}
-                      </div>
-                    ))}
+                {/* Progress tracker or cancelled notice */}
+                {order.status === "cancelled" ? (
+                  <div className="flex items-center gap-3 px-6 py-4">
+                    <XCircle className="w-5 h-5 text-red-500 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                        Order Cancelled
+                      </p>
+                      {order.cancelReason && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          {order.cancelReason}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                ) : (
+                  currentStep >= 0 &&
+                  currentStep < statusSteps.length && (
+                    <div className="flex items-center justify-between px-6 py-4">
+                      {statusSteps.map((step, i) => (
+                        <div
+                          key={step}
+                          className="flex items-center flex-1 last:flex-initial"
+                        >
+                          <div className="flex flex-col items-center">
+                            <div
+                              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
+                                i <= currentStep
+                                  ? "bg-orange text-white"
+                                  : "bg-gray-200 dark:bg-gray-700 text-gray-400"
+                              }`}
+                            >
+                              {i < currentStep ? "\u2713" : i + 1}
+                            </div>
+                            <span className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 text-center w-14 leading-tight">
+                              {statusLabels[step]}
+                            </span>
+                          </div>
+                          {i < statusSteps.length - 1 && (
+                            <div
+                              className={`flex-1 h-0.5 mx-1 mt-[-14px] ${
+                                i < currentStep
+                                  ? "bg-orange"
+                                  : "bg-gray-200 dark:bg-gray-700"
+                              }`}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )
                 )}
 
                 <Separator />
@@ -245,15 +294,33 @@ function Success() {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/30">
-                  {order.deliveryDetails?.address && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate max-w-[60%]">
-                      <MapPin className="w-3 h-3 shrink-0" />
-                      {order.deliveryDetails.address}
-                      {order.deliveryDetails.city
-                        ? `, ${order.deliveryDetails.city}`
-                        : ""}
-                    </p>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {order.deliveryDetails?.address && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate max-w-[45%]">
+                        <MapPin className="w-3 h-3 shrink-0" />
+                        {order.deliveryDetails.address}
+                        {order.deliveryDetails.city
+                          ? `, ${order.deliveryDetails.city}`
+                          : ""}
+                      </p>
+                    )}
+                    {["pending", "confirmed"].includes(order.status) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 text-xs h-7"
+                        disabled={cancellingId === order._id}
+                        onClick={() => handleCancelOrder(order._id)}
+                      >
+                        {cancellingId === order._id ? (
+                          <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                        ) : (
+                          <XCircle className="w-3 h-3 mr-1" />
+                        )}
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
                   <span className="font-bold text-gray-800 dark:text-white flex items-center text-sm">
                     <IndianRupee className="w-3.5 h-3.5" />
                     {order.totalAmount || 0}

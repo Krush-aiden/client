@@ -7,9 +7,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Loader2, Package, MapPin, IndianRupee } from "lucide-react";
+import { Loader2, Package, MapPin, IndianRupee, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const API_RESTAURANT_URL: string | undefined =
@@ -48,12 +57,19 @@ const statusColors: Record<string, string> = {
     "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
   delivered:
     "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
 
 function Order() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [cancelDialog, setCancelDialog] = useState<{
+    open: boolean;
+    orderId: string;
+  }>({ open: false, orderId: "" });
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelSubmitting, setCancelSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -72,6 +88,12 @@ function Order() {
   }, []);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    // If admin selects "cancelled", open the reason popup instead
+    if (newStatus === "cancelled") {
+      setCancelDialog({ open: true, orderId });
+      setCancelReason("");
+      return;
+    }
     setUpdatingId(orderId);
     try {
       await axios.post(
@@ -86,6 +108,29 @@ function Order() {
       console.error("Failed to update status:", error);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleCancelSubmit = async () => {
+    if (!cancelReason.trim()) return;
+    setCancelSubmitting(true);
+    try {
+      await axios.post(
+        `${API_RESTAURANT_URL}/order/${cancelDialog.orderId}/status`,
+        { status: "cancelled", cancelReason: cancelReason.trim() },
+        { withCredentials: true },
+      );
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === cancelDialog.orderId ? { ...o, status: "cancelled" } : o,
+        ),
+      );
+      setCancelDialog({ open: false, orderId: "" });
+      setCancelReason("");
+    } catch (error) {
+      console.error("Failed to cancel order:", error);
+    } finally {
+      setCancelSubmitting(false);
     }
   };
 
@@ -219,43 +264,113 @@ function Order() {
                   <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Update Status
                   </Label>
-                  <Select
-                    value={order.status}
-                    onValueChange={(val) => handleStatusChange(order._id, val)}
-                    disabled={updatingId === order._id}
-                  >
-                    <SelectTrigger>
-                      {updatingId === order._id ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />{" "}
-                          Updating...
-                        </span>
-                      ) : (
-                        <SelectValue placeholder="Select Status" />
-                      )}
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {[
-                          "pending",
-                          "confirmed",
-                          "preparing",
-                          "outForDelivery",
-                          "delivered",
-                        ].map((status, index) => (
-                          <SelectItem key={index} value={status}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  {order.status === "cancelled" ? (
+                    <div className="flex items-center gap-2 text-sm text-red-500 dark:text-red-400 p-2 rounded-md bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+                      <XCircle className="w-4 h-4 shrink-0" />
+                      <span>Cancelled — locked</span>
+                    </div>
+                  ) : order.status === "delivered" ? (
+                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 p-2 rounded-md bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800">
+                      <span>Delivered — locked</span>
+                    </div>
+                  ) : (
+                    <Select
+                      value={order.status}
+                      onValueChange={(val) =>
+                        handleStatusChange(order._id, val)
+                      }
+                      disabled={updatingId === order._id}
+                    >
+                      <SelectTrigger>
+                        {updatingId === order._id ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                            Updating...
+                          </span>
+                        ) : (
+                          <SelectValue placeholder="Select Status" />
+                        )}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {[
+                            "pending",
+                            "confirmed",
+                            "preparing",
+                            "outForDelivery",
+                            "delivered",
+                            "cancelled",
+                          ].map((status, index) => (
+                            <SelectItem key={index} value={status}>
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Cancel reason dialog */}
+      <Dialog
+        open={cancelDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCancelDialog({ open: false, orderId: "" });
+            setCancelReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogTitle className="font-semibold text-lg flex items-center gap-2">
+            <XCircle className="w-5 h-5 text-red-500" />
+            Cancel Order
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
+            Please provide a reason for cancelling this order. This will be
+            visible to the customer.
+          </DialogDescription>
+          <div className="mt-3">
+            <Label className="text-sm">Cancel Reason</Label>
+            <Input
+              placeholder="e.g. Out of stock, Customer requested, ..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <DialogFooter className="pt-4 gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelDialog({ open: false, orderId: "" });
+                setCancelReason("");
+              }}
+            >
+              Go Back
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={!cancelReason.trim() || cancelSubmitting}
+              onClick={handleCancelSubmit}
+            >
+              {cancelSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Cancelling...
+                </>
+              ) : (
+                "Confirm Cancel"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
