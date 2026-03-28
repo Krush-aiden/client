@@ -84,19 +84,24 @@ function AdminDashboard() {
   useEffect(() => {
     dispatch(fetchMenu());
     dispatch(fetchRestaurantFunction());
+    const controller = new AbortController();
     const fetchOrders = async () => {
       try {
         const res = await axios.get(`${API_RESTAURANT_URL}/order`, {
           withCredentials: true,
+          signal: controller.signal,
         });
         setOrders(res.data?.orders || []);
       } catch {
         /* ignore */
       } finally {
-        setOrdersLoading(false);
+        if (!controller.signal.aborted) {
+          setOrdersLoading(false);
+        }
       }
     };
     fetchOrders();
+    return () => controller.abort();
   }, [dispatch]);
 
   return (

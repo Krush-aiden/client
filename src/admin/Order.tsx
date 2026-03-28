@@ -72,19 +72,26 @@ function Order() {
   const [cancelSubmitting, setCancelSubmitting] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchOrders = async () => {
       try {
         const response = await axios.get(`${API_RESTAURANT_URL}/order`, {
           withCredentials: true,
+          signal: controller.signal,
         });
         setOrders(response.data?.orders || []);
       } catch (error) {
-        console.error("Failed to fetch orders:", error);
+        if (!controller.signal.aborted) {
+          console.error("Failed to fetch orders:", error);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchOrders();
+    return () => controller.abort();
   }, []);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {

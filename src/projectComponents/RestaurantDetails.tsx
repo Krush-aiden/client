@@ -16,19 +16,27 @@ const RestaurantDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchRestaurant = async () => {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await axios.get(`${API_RESTAURANT_URL}/${id}`);
+        const response = await axios.get(`${API_RESTAURANT_URL}/${id}`, {
+          signal: controller.signal,
+        });
         setRestaurant(response.data);
       } catch (error) {
-        console.error("Failed to fetch restaurant:", error);
+        if (!controller.signal.aborted) {
+          console.error("Failed to fetch restaurant:", error);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchRestaurant();
+    return () => controller.abort();
   }, [id]);
 
   if (loading) {

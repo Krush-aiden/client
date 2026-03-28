@@ -78,19 +78,24 @@ function Success() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchOrders = async () => {
       try {
         const res = await axios.get(`${API_RESTAURANT_URL}/order/user`, {
           withCredentials: true,
+          signal: controller.signal,
         });
         setOrders(res.data?.orders || []);
       } catch {
         /* ignore */
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchOrders();
+    return () => controller.abort();
   }, []);
 
   const handleCancelOrder = async (orderId: string) => {

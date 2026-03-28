@@ -42,7 +42,11 @@ function SearchPage() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [closedRestaurant, setClosedRestaurant] = useState<any>(null);
 
-  const fetchResults = async (query: string, cuisines: string[] = []) => {
+  const fetchResults = async (
+    query: string,
+    cuisines: string[] = [],
+    signal?: AbortSignal,
+  ) => {
     if (!query) return;
     setLoading(true);
     try {
@@ -53,14 +57,18 @@ function SearchPage() {
       const response = await axios.post(
         `${API_RESTAURANT_URL}/search/${encodeURIComponent(query)}`,
         {},
-        { params },
+        { params, signal },
       );
       setRestaurants(response.data?.data || []);
     } catch (error) {
-      console.error("Search error:", error);
-      setRestaurants([]);
+      if (!axios.isCancel(error)) {
+        console.error("Search error:", error);
+        setRestaurants([]);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -76,7 +84,9 @@ function SearchPage() {
       filtered.unshift(text);
       localStorage.setItem(key, JSON.stringify(filtered.slice(0, 5)));
 
-      fetchResults(text, selectedFilters);
+      const controller = new AbortController();
+      fetchResults(text, selectedFilters, controller.signal);
+      return () => controller.abort();
     }
   }, [text]);
 

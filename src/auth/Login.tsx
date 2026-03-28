@@ -129,6 +129,11 @@ const Login = () => {
     };
 
     loadGoogleScript();
+    return () => {
+      const script = document.getElementById("google-script");
+      if (script) script.remove();
+      googleInitialized.current = false;
+    };
   }, [handleGoogleSuccess]);
 
   useEffect(() => {
