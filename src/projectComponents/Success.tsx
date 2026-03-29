@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   IndianRupee,
   Package,
-  Clock,
   Loader2,
   MapPin,
   ShoppingBag,
